@@ -29,4 +29,3 @@ src/
 - `main`: 배포/데모용, 직접 push 금지 → PR로만 머지
 - 작업 브랜치: `feat/기능명`, `fix/내용`, `chore/내용`
 - 커밋: `feat: ...`, `fix: ...`, `style: ...`, `refactor: ...`, `docs: ...`, `chore: ...`
-- PR은 상대방 리뷰 1회 후 머지
