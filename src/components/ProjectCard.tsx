@@ -1,20 +1,16 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { colors } from '../styles/theme';
+import { getWorkTypeLabel } from '../constants/workTypes';
+import StatusBadge from './StatusBadge';
+import type { Project } from '../types/project';
+import { formatDate } from '../utils/formatDate';
 
-export interface ProjectSummary {
-  id: string;
-  title: string;
-  category: string;
-  status: string;
-  updatedAt: string; // 'YYYY.MM.DD'
-  thumbnailUrl?: string;
-}
+// 대시보드 "최근 프로젝트" 카드 ("자세히" → 내 프로젝트에서 해당 프로젝트 선택)
 
-// 대시보드 "최근 프로젝트" 카드
-
-export default function ProjectCard({ project }: { project: ProjectSummary }) {
-  const { id, title, category, status, updatedAt, thumbnailUrl } = project;
+export default function ProjectCard({ project }: { project: Project }) {
+  const { id, title, workType, status, updatedAt, thumbnailUrl } = project;
+  const category = getWorkTypeLabel(workType);
 
   return (
     <Card>
@@ -25,11 +21,11 @@ export default function ProjectCard({ project }: { project: ProjectSummary }) {
             <Title>{title}</Title>
             <Category>{category}</Category>
           </TextGroup>
-          <StatusBadge>{status}</StatusBadge>
+          <FullWidthBadge status={status} />
         </Info>
       </Body>
       <Footer>
-        <UpdatedAt>최근 수정: {updatedAt}</UpdatedAt>
+        <UpdatedAt>최근 수정: {formatDate(updatedAt)}</UpdatedAt>
         <DetailLink to={`/projects/${id}`}>자세히</DetailLink>
       </Footer>
     </Card>
@@ -102,23 +98,15 @@ const Category = styled.p`
   font-size: 14px;
 `;
 
-const StatusBadge = styled.span`
+const FullWidthBadge = styled(StatusBadge)`
   width: 100%;
-  padding: 6px 26px;
-  color: ${colors.primary};
-  font-size: 14px;
-  line-height: 1.4;
-  text-align: center;
-  white-space: nowrap;
-  background: ${colors.primarySoft};
-  border-radius: 25px;
 `;
 
 const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 122px;
+  gap: 16px; /* 넓을 땐 space-between으로 벌어짐 (Figma 122px) */
   padding: 14px 16px 12px;
   font-size: 14px;
   line-height: 1.4;

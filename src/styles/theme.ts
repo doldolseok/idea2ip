@@ -12,6 +12,14 @@ export const colors = {
   textTertiary: '#8795AA',
   cardBorder: '#E7ECF4',
   primarySoft: '#EDF2FF',
+  cardActiveBorder: '#90A6E9', // 카드 hover/선택 테두리
+  textStrong: '#17213A', // 타임라인 항목 제목
+  textMuted: '#98A3B5',
+  tabBarBg: '#F3F6FB',
+  tabBarBorder: '#E4EAF3',
+  tabActiveBorder: '#DDE6F5',
+  chipInactiveBg: 'rgba(219, 227, 240, 0.4)',
+  chipInactiveText: '#98A3B5',
   selected: '#3063ED', // 모달 선택/생성 버튼 색 (Figma 기준, primary와 살짝 다름)
   selectedBg: '#ECF1FF',
   overlay: 'rgba(13, 20, 38, 0.22)',
