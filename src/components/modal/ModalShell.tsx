@@ -12,6 +12,10 @@ interface Props {
   width?: number;
   /** Figma에서 그림자가 있는 모달만 true */
   shadow?: boolean;
+  /** md: 20px 제목 (기본) / lg: 24px 굵은 제목 (Copyright Brief 편집) */
+  size?: 'md' | 'lg';
+  /** default: 진한 배경 / light: 옅은 배경 (리포트 탭) */
+  dim?: 'default' | 'light';
   onClose: () => void;
   children: ReactNode;
 }
@@ -27,6 +31,8 @@ export default function ModalShell({
   subtitle,
   width = 596,
   shadow = false,
+  size = 'md',
+  dim = 'default',
   onClose,
   children,
 }: Props) {
@@ -39,7 +45,7 @@ export default function ModalShell({
   }, [onClose]);
 
   return (
-    <Overlay onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <Overlay $dim={dim} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <Dialog
         role="dialog"
         aria-modal="true"
@@ -47,9 +53,11 @@ export default function ModalShell({
         style={{ width }}
         $shadow={shadow}
       >
-        <Header>
-          <Title id={titleId}>{title}</Title>
-          {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        <Header $size={size}>
+          <Title id={titleId} $size={size}>
+            {title}
+          </Title>
+          {subtitle && <Subtitle $size={size}>{subtitle}</Subtitle>}
         </Header>
         {children}
       </Dialog>
@@ -58,7 +66,9 @@ export default function ModalShell({
 }
 
 /* 사이드바는 가리지 않고 메인 영역만 어둡게 */
-const Overlay = styled.div`
+type SizeProps = { $size: 'md' | 'lg' };
+
+const Overlay = styled.div<{ $dim: 'default' | 'light' }>`
   position: fixed;
   top: 0;
   right: 0;
@@ -69,7 +79,7 @@ const Overlay = styled.div`
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: ${colors.overlay};
+  background: ${({ $dim }) => ($dim === 'light' ? colors.overlayLight : colors.overlay)};
 `;
 
 const Dialog = styled.div<{ $shadow: boolean }>`
@@ -82,25 +92,26 @@ const Dialog = styled.div<{ $shadow: boolean }>`
   box-shadow: ${({ $shadow }) => ($shadow ? '0 10px 15px rgba(0, 0, 0, 0.15)' : 'none')};
 `;
 
-const Header = styled.div`
+/* lg (Figma Copyright Brief 편집): 제목 위 26px, 제목-부제 9px, 구분선 위 16px */
+const Header = styled.div<SizeProps>`
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 0 14px;
+  gap: ${({ $size }) => ($size === 'lg' ? 9 : 14)}px;
+  padding: ${({ $size }) => ($size === 'lg' ? '26px 0 16px' : '18px 0 14px')};
   border-bottom: 1px solid ${colors.border};
 `;
 
-const Title = styled.h2`
+const Title = styled.h2<SizeProps>`
   margin: 0;
   color: ${colors.text};
-  font-size: 20px;
-  font-weight: 600;
+  font-size: ${({ $size }) => ($size === 'lg' ? 24 : 20)}px;
+  font-weight: ${({ $size }) => ($size === 'lg' ? 700 : 600)};
   line-height: normal;
 `;
 
-/* Figma 텍스트 박스 높이 10px 기준 (글자는 박스 밖으로 살짝 넘침) */
-const Subtitle = styled.p`
-  height: 10px;
+/* md: Figma 텍스트 박스 높이 10px 기준 (글자는 박스 밖으로 살짝 넘침) */
+const Subtitle = styled.p<SizeProps>`
+  height: ${({ $size }) => ($size === 'lg' ? 'auto' : '10px')};
   margin: 0;
   color: ${colors.muted};
   font-size: 13px;

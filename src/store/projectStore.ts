@@ -10,6 +10,10 @@ import {
   isLastQuestion,
 } from '../utils/interview';
 import { GREETING_MESSAGE } from '../mocks/interview';
+import { createRegisteredAt } from '../utils/registeredAt';
+import type { BriefSectionKey, BriefState } from '../types/brief';
+import { buildMockBrief } from '../mocks/brief';
+import { BRIEF_GENERATION_TOTAL_MS } from '../utils/brief';
 
 // TODO: 백엔드 API 연동 시 TanStack Query로 교체 (현재는 임시 목업 데이터, 새로고침하면 초기화됨)
 // 빈 배열로 바꾸면 "프로젝트가 없을 때" 화면을 확인할 수 있어요.
@@ -66,6 +70,13 @@ interface ProjectState {
    * @returns 보낸 답변이 없으면 'no-answer'
    */
   saveInterviewAnswer: (projectId: string) => 'no-answer' | 'next' | 'completed';
+
+  /** 프로젝트 ID별 Copyright Brief (리포트 탭) */
+  briefByProjectId: Record<string, BriefState>;
+  /** 생성 / 업데이트 시작 → 생성 중 → (목업 시간 후) 새 버전 저장 */
+  startBriefGeneration: (projectId: string) => void;
+  /** 편집 모달에서 섹션 직접 수정 (사용자 수정 시각 기록) */
+  updateBriefSection: (projectId: string, key: BriefSectionKey, content: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>()((set, get) => ({
@@ -138,8 +149,12 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     const saved: InterviewSession = {
       ...session,
       answers: { ...session.answers, [fieldKey]: session.draftAnswer },
+      // TODO: 서버 연동 시 서버 기록 시각으로 교체 (utils/registeredAt 과 같은 방식)
+      answeredAt: { ...session.answeredAt, [fieldKey]: createRegisteredAt() },
       fields: session.fields.map((field) =>
-        field.key === fieldKey ? { ...field, status: 'done', summary: session.draftAnswer! } : field,
+        field.key === fieldKey
+          ? { ...field, status: 'done', summary: session.draftAnswer! }
+          : field,
       ),
       draftAnswer: null,
     };
@@ -160,7 +175,72 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     });
     return 'next';
   },
+
+  // TODO: Copyright Brief API 연동 시 교체 (생성 요청 → 완료 응답)
+  briefByProjectId: {},
+  startBriefGeneration: (projectId) => {
+    const current = getBrief(projectId);
+    if (current.status === 'generating') return;
+
+    setBrief(projectId, {
+      ...current,
+      status: 'generating',
+      generationStartedAt: new Date().toISOString(),
+    });
+    // 목업: 단계 진행 시간이 지나면 완료 (탭을 나가도 store에서 계속 진행)
+    window.setTimeout(() => completeBriefGeneration(projectId), BRIEF_GENERATION_TOTAL_MS);
+  },
+  updateBriefSection: (projectId, key, content) => {
+    const brief = getBrief(projectId);
+    if (!brief.report) return;
+    setBrief(projectId, {
+      ...brief,
+      report: {
+        ...brief.report,
+        sections: brief.report.sections.map((section) =>
+          section.key === key
+            ? { ...section, content, userEditedAt: new Date().toISOString() }
+            : section,
+        ),
+      },
+    });
+  },
 }));
+
+const INITIAL_BRIEF: BriefState = { status: 'not-generated' };
+
+function getBrief(projectId: string) {
+  return useProjectStore.getState().briefByProjectId[projectId] ?? INITIAL_BRIEF;
+}
+
+function setBrief(projectId: string, brief: BriefState) {
+  useProjectStore.setState((state) => ({
+    briefByProjectId: { ...state.briefByProjectId, [projectId]: brief },
+  }));
+}
+
+/** 생성 완료: 지금 프로젝트 데이터로 새 버전 생성, 직전 버전은 1개만 보관 */
+function completeBriefGeneration(projectId: string) {
+  const state = useProjectStore.getState();
+  const brief = getBrief(projectId);
+  const project = state.projects.find((p) => p.id === projectId);
+  if (brief.status !== 'generating' || !project) return;
+
+  const report = buildMockBrief(
+    {
+      project,
+      materials: state.materialsByProjectId[projectId] ?? [],
+      finalWork: state.finalWorkByProjectId[projectId],
+      interview: getInterview(projectId),
+    },
+    brief.report,
+  );
+  setBrief(projectId, { status: 'generated', report, previous: brief.report });
+}
+
+/** 프로젝트의 Copyright Brief 상태 (없으면 생성 전) */
+export const useBrief = (projectId: string) =>
+  useProjectStore((state) => state.briefByProjectId[projectId] ?? INITIAL_BRIEF);
 
 function getInterview(projectId: string) {
   return useProjectStore.getState().interviewByProjectId[projectId] ?? INITIAL_INTERVIEW;

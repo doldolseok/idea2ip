@@ -12,6 +12,7 @@ export const INITIAL_INTERVIEW: InterviewSession = {
   currentIndex: 0,
   messages: [],
   answers: {},
+  answeredAt: {},
   draftAnswer: null,
 };
 

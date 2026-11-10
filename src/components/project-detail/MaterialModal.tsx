@@ -8,6 +8,7 @@ import {
   Field,
   FieldLabel,
   ModalActions,
+  ModalChip as Chip,
   SubmitButton,
   TextArea,
   TextInput,
@@ -20,7 +21,6 @@ import { useProjectStore } from '../../store/projectStore';
 import type { ProcessMaterial } from '../../types/project';
 import { formatDate, parseDotDate } from '../../utils/formatDate';
 import { createRegisteredAt } from '../../utils/registeredAt';
-import { colors } from '../../styles/theme';
 
 interface Props {
   projectId: string;
@@ -251,26 +251,6 @@ const TypeLabel = styled(FieldLabel)`
 const Chips = styled.div`
   display: flex;
   gap: 10px;
-`;
-
-const Chip = styled.button<{ $active: boolean }>`
-  height: 28px;
-  padding: 0;
-  color: ${({ $active }) => ($active ? colors.selected : colors.muted)};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: normal;
-  background: ${({ $active }) => ($active ? colors.selectedBg : '#f5f7fc')};
-  border: 0;
-  border-radius: 14px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-
-  &:hover {
-    color: ${colors.selected};
-  }
 `;
 
 const DateField = styled(Field)`
