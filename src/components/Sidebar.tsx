@@ -13,8 +13,11 @@ const NAV_ITEMS = [
   { to: '/guide', label: '사용 가이드', icon: bookOpenIcon, end: false },
 ];
 
+/** 사이드바 너비. 메인 영역만 덮는 오버레이(새 프로젝트 모달 등)에서 사용 */
+export const SIDEBAR_WIDTH = 276;
+
 const Aside = styled.aside`
-  width: 276px;
+  width: ${SIDEBAR_WIDTH}px;
   flex-shrink: 0;
   min-height: 100vh;
   padding: 40px 14px;

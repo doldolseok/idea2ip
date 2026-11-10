@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import AlertModal from '../components/AlertModal';
+import type { AlertVariant } from '../components/AlertModal';
 
 /**
  * const { showAlert, alertNode } = useAlertModal();
  * showAlert('아이디를 입력해주세요.');  → 1.8초 뒤 자동으로 사라짐
  * JSX 안에서 {alertNode} 를 AlertSlot 안에 넣어서 사용
  */
-export function useAlertModal(duration = 1800) {
+export function useAlertModal(duration = 1800, variant: AlertVariant = 'default') {
   const [alert, setAlert] = useState<{ id: number; text: string } | null>(null);
 
   useEffect(() => {
@@ -21,7 +22,12 @@ export function useAlertModal(duration = 1800) {
   }, []);
 
   const alertNode = alert ? (
-    <AlertModal key={alert.id} message={alert.text} onClose={() => setAlert(null)} />
+    <AlertModal
+      key={alert.id}
+      message={alert.text}
+      variant={variant}
+      onClose={() => setAlert(null)}
+    />
   ) : null;
 
   return { showAlert, alertNode };
