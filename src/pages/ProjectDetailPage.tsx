@@ -6,6 +6,7 @@ import ProcessTab from '../components/project-detail/ProcessTab';
 import TabPlaceholder from '../components/project-detail/TabPlaceholder';
 import FinalWorkTab from '../components/project-detail/final-work/FinalWorkTab';
 import InterviewTab from '../components/project-detail/interview/InterviewTab';
+import ContributionTab from '../components/project-detail/contribution/ContributionTab';
 import type { Project } from '../types/project';
 import { DEFAULT_PROJECT_TAB, PROJECT_TABS, isProjectTabKey } from '../constants/projectTabs';
 import type { ProjectTabKey } from '../constants/projectTabs';
@@ -34,6 +35,8 @@ function renderTabContent(
       );
     case 'interview':
       return <InterviewTab key={project.id} projectId={project.id} onChangeTab={changeTab} />;
+    case 'contribution':
+      return <ContributionTab key={project.id} projectId={project.id} onChangeTab={changeTab} />;
     default:
       return <TabPlaceholder label={PROJECT_TABS.find((t) => t.key === tab)?.label ?? ''} />;
   }
