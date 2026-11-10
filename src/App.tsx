@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import DashboardLayout from './components/DashboardLayout';
-import GuidePage from './pages/GuidePage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import MyProjectsPage from './pages/MyProjectsPage';
@@ -14,8 +13,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/projects" element={<MyProjectsPage />} />
         <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
-        <Route path="/guide" element={<GuidePage />} />
-        {/* 이후: /projects/new 추가 */}
+        {/* 이후: /projects/new, /guide 추가 */}
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
