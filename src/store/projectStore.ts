@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { MOCK_MATERIALS_BY_PROJECT } from '../mocks/processMaterials';
 import type { FinalWork, ProcessMaterial, Project } from '../types/project';
+import type { InterviewMessage, InterviewSession } from '../types/interview';
+import {
+  INITIAL_INTERVIEW,
+  buildQuestionPlan,
+  createMessage,
+  getQuestion,
+  isLastQuestion,
+} from '../utils/interview';
+import { GREETING_MESSAGE } from '../mocks/interview';
 
 // TODO: 백엔드 API 연동 시 TanStack Query로 교체 (현재는 임시 목업 데이터, 새로고침하면 초기화됨)
 // 빈 배열로 바꾸면 "프로젝트가 없을 때" 화면을 확인할 수 있어요.
@@ -42,9 +51,24 @@ interface ProjectState {
   finalWorkByProjectId: Record<string, FinalWork>;
   /** 최종 작품 저장 / 이미지 교체 / 설명 수정 (일부 값만 바꿀 때도 사용) */
   saveFinalWork: (projectId: string, finalWork: FinalWork) => void;
+
+  /** 프로젝트 ID별 AI 인터뷰 (없으면 시작 전) */
+  interviewByProjectId: Record<string, InterviewSession>;
+  /** 인터뷰 시작: 보완 필요 필드로 질문 목록을 만들고 인사 + 첫 질문 */
+  startInterview: (projectId: string) => void;
+  /** 사용자가 현재 질문에 답변 전송 */
+  sendInterviewAnswer: (projectId: string, text: string) => void;
+  /** AI 메시지 추가 (답변 확인 메시지 등) */
+  addInterviewMessage: (projectId: string, message: InterviewMessage) => void;
+  /**
+   * 현재 답변을 해당 필드에 저장 + 필드 "완료" 처리
+   * 마지막 질문이면 인터뷰 완료, 아니면 다음 질문으로
+   * @returns 보낸 답변이 없으면 'no-answer'
+   */
+  saveInterviewAnswer: (projectId: string) => 'no-answer' | 'next' | 'completed';
 }
 
-export const useProjectStore = create<ProjectState>()((set) => ({
+export const useProjectStore = create<ProjectState>()((set, get) => ({
   projects: MOCK_PROJECTS,
   materialsByProjectId: MOCK_MATERIALS_BY_PROJECT,
   // 새 프로젝트는 제작자료가 빈 상태로 시작
@@ -75,7 +99,82 @@ export const useProjectStore = create<ProjectState>()((set) => ({
     set((state) => ({
       finalWorkByProjectId: { ...state.finalWorkByProjectId, [projectId]: finalWork },
     })),
+
+  // TODO: AI 인터뷰 API 연동 시 교체 (질문 생성 / 답변 저장 / 종료 여부를 서버가 결정)
+  interviewByProjectId: {},
+  startInterview: (projectId) => {
+    const base = get().interviewByProjectId[projectId] ?? INITIAL_INTERVIEW;
+    const questionKeys = buildQuestionPlan(base.fields);
+    const first = questionKeys[0];
+    setInterview(projectId, {
+      ...base,
+      // 물어볼 필드가 없으면 바로 완료
+      status: first ? 'in-progress' : 'completed',
+      questionKeys,
+      currentIndex: 0,
+      draftAnswer: null,
+      messages: first
+        ? [createMessage('ai', GREETING_MESSAGE), createMessage('ai', getQuestion(first).question)]
+        : [],
+    });
+  },
+  sendInterviewAnswer: (projectId, text) => {
+    const session = getInterview(projectId);
+    setInterview(projectId, {
+      ...session,
+      messages: [...session.messages, createMessage('user', text)],
+      draftAnswer: session.draftAnswer ? `${session.draftAnswer}\n${text}` : text,
+    });
+  },
+  addInterviewMessage: (projectId, message) => {
+    const session = getInterview(projectId);
+    setInterview(projectId, { ...session, messages: [...session.messages, message] });
+  },
+  saveInterviewAnswer: (projectId) => {
+    const session = getInterview(projectId);
+    const fieldKey = session.questionKeys[session.currentIndex];
+    if (!session.draftAnswer || !fieldKey) return 'no-answer';
+
+    const saved: InterviewSession = {
+      ...session,
+      answers: { ...session.answers, [fieldKey]: session.draftAnswer },
+      fields: session.fields.map((field) =>
+        field.key === fieldKey ? { ...field, status: 'done', summary: session.draftAnswer! } : field,
+      ),
+      draftAnswer: null,
+    };
+
+    if (isLastQuestion(session)) {
+      setInterview(projectId, { ...saved, status: 'completed' });
+      return 'completed';
+    }
+
+    const nextIndex = session.currentIndex + 1;
+    setInterview(projectId, {
+      ...saved,
+      currentIndex: nextIndex,
+      messages: [
+        ...saved.messages,
+        createMessage('ai', getQuestion(session.questionKeys[nextIndex]).question),
+      ],
+    });
+    return 'next';
+  },
 }));
+
+function getInterview(projectId: string) {
+  return useProjectStore.getState().interviewByProjectId[projectId] ?? INITIAL_INTERVIEW;
+}
+
+function setInterview(projectId: string, session: InterviewSession) {
+  useProjectStore.setState((state) => ({
+    interviewByProjectId: { ...state.interviewByProjectId, [projectId]: session },
+  }));
+}
+
+/** 프로젝트의 AI 인터뷰 상태 (없으면 시작 전 기본값) */
+export const useInterview = (projectId: string) =>
+  useProjectStore((state) => state.interviewByProjectId[projectId] ?? INITIAL_INTERVIEW);
 
 /** 프로젝트의 최종 작품 (없으면 undefined) */
 export const useFinalWork = (projectId: string) =>

@@ -18,6 +18,12 @@ export const colors = {
   textHint: '#66758F', // 최종 작품 탭 안내/요약 문구
   softBlueBorder: '#D5E0FA', // 드롭 영역 점선, 작품 교체 등 흰색 보조 버튼 테두리
   softBlueBg: '#F7F9FF', // 드롭 영역, 이미지 미리보기 배경
+  // AI 인터뷰
+  panelBorder: '#DFE7F2', // 시작 전 화면 카드 테두리
+  rowBg: '#F6F8FC', // 필드/자료 행 배경, 보완 필요 칩, 비활성 버튼
+  chipPositiveBg: '#EEF3FF', // 완료/준비됨 칩
+  disabledText: '#98A5B9',
+  userBubbleBg: '#F0F4FF',
   tabBarBg: '#F3F6FB',
   tabBarBorder: '#E4EAF3',
   tabActiveBorder: '#DDE6F5',
