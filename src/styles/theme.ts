@@ -24,9 +24,6 @@ export const colors = {
   chipPositiveBg: '#EEF3FF', // 완료/준비됨 칩
   disabledText: '#98A5B9',
   userBubbleBg: '#F0F4FF',
-  // 사용 가이드
-  guideMuted: '#7888A2', // 단계 부제, "자주 묻는 질문" 제목
-  guideText: '#17243B', // 안내 항목, 질문/답변
   // 창작 기여 정리
   contributionMuted: '#6F7A90', // 보조 문구
   contributionBorder: '#E2E8F2', // 타임라인/패널 카드 테두리
