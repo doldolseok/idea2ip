@@ -44,6 +44,8 @@ export interface InterviewSession {
   messages: InterviewMessage[];
   /** 저장한 필드별 답변 */
   answers: Partial<Record<BriefFieldKey, string>>;
+  /** 필드별 답변 저장 시각 (리포트 업데이트 배너에서 새 답변 개수 계산용) */
+  answeredAt: Partial<Record<BriefFieldKey, string>>;
   /** 현재 질문에 보낸 답변 (아직 저장 전). 여러 번 보내면 줄바꿈으로 이어 붙임 */
   draftAnswer: string | null;
 }

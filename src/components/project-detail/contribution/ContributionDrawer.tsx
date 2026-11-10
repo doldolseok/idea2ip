@@ -1,11 +1,8 @@
-import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Pill } from '../interview/interview.styles';
-import type {
-  ContributionStepResult,
-  ContributionTimelineItem,
-  EvidenceKind,
-} from '../../../types/contribution';
+import SidePanel from '../SidePanel';
+import EvidenceTag from '../EvidenceTag';
+import type { ContributionStepResult, ContributionTimelineItem } from '../../../types/contribution';
 import { STEP_KIND_LABEL, formatStepNumber } from '../../../utils/contribution';
 import { formatDate, formatTime } from '../../../utils/formatDate';
 import { colors } from '../../../styles/theme';
@@ -21,16 +18,6 @@ interface Props {
   onViewProcess: () => void;
 }
 
-/** 근거 태그: 시안의 두 가지는 파랑 칩, "미확인"은 기존 회색 칩(AI 인터뷰 "보완 필요")과 같은 스타일 */
-const EVIDENCE_CHIP: Record<
-  EvidenceKind,
-  { label: string; tone: 'positive' | 'neutral'; width: number }
-> = {
-  'user-statement': { label: '사용자 진술', tone: 'positive', width: 82 },
-  attachment: { label: '첨부자료 기반', tone: 'positive', width: 88 },
-  unverified: { label: '미확인', tone: 'neutral', width: 60 },
-};
-
 // 창작 기여 정리 단계 상세 패널 (화면 오른쪽, 배경 어둡게 처리 없음)
 // 초기 스케치 / AI 활용 / 직접 수정 / 최종 작품 모두 이 컴포넌트 하나로 표시
 
@@ -43,20 +30,11 @@ export default function ContributionDrawer({
   onMove,
   onViewProcess,
 }: Props) {
-  // Esc로 닫기
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
   const hasPrev = index > 0;
   const hasNext = index < total - 1;
 
   return (
-    <Drawer role="dialog" aria-labelledby="contribution-drawer-title">
+    <Drawer width={365} labelledBy="contribution-drawer-title" onClose={onClose}>
       <Top>
         <StageLabel>
           <Pill $tone="positive" $width={36}>
@@ -113,17 +91,12 @@ export default function ContributionDrawer({
 
         <EvidenceSection>
           <EvidenceTitle>근거 및 출처</EvidenceTitle>
-          {step.evidence.map((evidence) => {
-            const chip = EVIDENCE_CHIP[evidence.kind];
-            return (
-              <EvidenceRow key={`${evidence.kind}-${evidence.source}`}>
-                <EvidenceChip $tone={chip.tone} $width={chip.width}>
-                  {chip.label}
-                </EvidenceChip>
-                <EvidenceSource>{evidence.source}</EvidenceSource>
-              </EvidenceRow>
-            );
-          })}
+          {step.evidence.map((evidence) => (
+            <EvidenceRow key={`${evidence.kind}-${evidence.source}`}>
+              <EvidenceTag kind={evidence.kind} size="sm" />
+              <EvidenceSource>{evidence.source}</EvidenceSource>
+            </EvidenceRow>
+          ))}
         </EvidenceSection>
       </Sections>
 
@@ -155,21 +128,8 @@ function Bullets({ items }: { items: string[] }) {
 }
 
 /* Figma: 오른쪽에 붙은 365px 카드, 화면 높이만큼, 오버레이 없음 */
-const Drawer = styled.aside`
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  width: 365px;
-  overflow-y: auto;
+const Drawer = styled(SidePanel)`
   padding: 34px 38px 27px 37px;
-  background: ${colors.card};
-  border: 1px solid ${colors.contributionBorder};
-  border-radius: 18px;
-  box-shadow: -8px 8px 24px rgba(0, 0, 0, 0.08);
 `;
 
 const Top = styled.div`
@@ -363,13 +323,6 @@ const EvidenceRow = styled.div`
   align-items: center;
   gap: 6px;
   min-height: 22px;
-`;
-
-const EvidenceChip = styled(Pill)`
-  height: 22px;
-  font-size: 9px;
-  line-height: 13px;
-  border-radius: 11px;
 `;
 
 const EvidenceSource = styled.span`

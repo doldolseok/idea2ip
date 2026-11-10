@@ -1,8 +1,30 @@
 import styled from 'styled-components';
 import { colors } from '../../styles/theme';
 
-// 모달 입력 폼 공통 스타일 (새 프로젝트, 제작 과정 자료 추가)
+// 모달 입력 폼 공통 스타일 (새 프로젝트, 제작 과정 자료 추가, Copyright Brief 편집)
 // 모달마다 Figma 값이 조금씩 달라서 필요한 곳은 styled(...)로 덮어써서 사용
+
+/** 모달 안 선택 칩 (자료 유형, Brief 섹션). 너비는 style={{ width }} 로 지정 */
+export const ModalChip = styled.button<{ $active: boolean }>`
+  height: 28px;
+  padding: 0;
+  color: ${({ $active }) => ($active ? colors.selected : colors.muted)};
+  font-size: 12px;
+  font-weight: 500;
+  line-height: normal;
+  white-space: nowrap;
+  background: ${({ $active }) => ($active ? colors.selectedBg : '#f5f7fc')};
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    color: ${colors.selected};
+  }
+`;
 
 export const Field = styled.div`
   display: flex;

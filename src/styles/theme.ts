@@ -36,4 +36,5 @@ export const colors = {
   selected: '#3063ED', // 모달 선택/생성 버튼 색 (Figma 기준, primary와 살짝 다름)
   selectedBg: '#ECF1FF',
   overlay: 'rgba(13, 20, 38, 0.22)',
+  overlayLight: 'rgba(23, 33, 58, 0.08)', // 리포트 편집 모달 / PDF 저장 패널 배경
 } as const;
