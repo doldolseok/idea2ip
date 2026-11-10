@@ -1,13 +1,45 @@
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 import plusIcon from '../assets/Vector.svg';
 import emptyFolderIcon from '../assets/empty-folder.svg';
+import creationMaterialsIcon from '../assets/creation-materials.svg';
+import aiInterviewIcon from '../assets/ai-interview.svg';
+import copyrightBriefIcon from '../assets/copyright-brief.svg';
+import NewProjectModal from '../components/NewProjectModal';
+import type { NewProjectInput } from '../components/NewProjectModal';
+import ProjectCard from '../components/ProjectCard';
+import type { ProjectSummary } from '../components/ProjectCard';
+import LibraryCard from '../components/LibraryCard';
+import { getWorkTypeLabel } from '../constants/workTypes';
 
-// TODO: 백엔드 API 연동 시 TanStack Query(useQuery)로 교체
-const projects: unknown[] = [];
+// TODO: 백엔드 API 연동 시 TanStack Query(useQuery)로 교체 (현재는 Figma 시안 확인용 더미 데이터)
+const INITIAL_PROJECTS: ProjectSummary[] = [
+  { id: '1', title: '제목제목제목', category: '포스터 디자인', status: '진행 중', updatedAt: '2026.10.15' },
+  { id: '2', title: '제목제목제목', category: '포스터 디자인', status: '진행 중', updatedAt: '2026.10.15' },
+  { id: '3', title: '제목제목제목', category: '포스터 디자인', status: '진행 중', updatedAt: '2026.10.15' },
+];
+
+// TODO: 자료실 개수도 API 연동 시 교체
+const library = [
+  { key: 'materials', label: '제작 자료', icon: creationMaterialsIcon, count: 3 },
+  { key: 'interview', label: 'AI 인터뷰', icon: aiInterviewIcon, count: 3 },
+  { key: 'brief', label: 'Copyright Brief', icon: copyrightBriefIcon, count: 3 },
+];
+
+/** 2026.11.11 형식 */
+const formatDate = (date: Date) =>
+  [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((n) => String(n).padStart(2, '0'))
+    .join('.');
+
+const Page = styled.div`
+  padding: 80px 50px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 46px;
+`;
 
 const Header = styled.section`
-  padding: 80px 50px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -65,6 +97,41 @@ const PlusImg = styled.img`
   height: 14px;
 `;
 
+const Sections = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+`;
+
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SectionTitle = styled.h2`
+  margin: 0;
+  padding: 0 12px;
+  color: #131c33;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+`;
+
+const ProjectRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  overflow-x: auto;
+`;
+
+const LibraryRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+`;
+
 const EmptyState = styled.div`
   position: absolute;
   top: 50%;
@@ -93,19 +160,70 @@ const EmptyText = styled.p`
 `;
 
 export default function HomePage() {
-  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // 임시: 화면 상태로만 관리 (새로고침하면 초기화됨)
+  const [projects, setProjects] = useState<ProjectSummary[]>(INITIAL_PROJECTS);
+  const thumbnailUrls = useRef<string[]>([]);
+
+  // 페이지를 벗어날 때 썸네일용 임시 URL 해제
+  useEffect(() => {
+    const urls = thumbnailUrls.current;
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, []);
+
+  const handleCreate = ({ name, image, workType }: NewProjectInput) => {
+    // TODO: 프로젝트 생성 API 연동 후 useMutation + 목록 쿼리 invalidate 로 교체
+    const thumbnailUrl = URL.createObjectURL(image);
+    thumbnailUrls.current.push(thumbnailUrl);
+
+    const newProject: ProjectSummary = {
+      id: crypto.randomUUID(),
+      title: name,
+      category: getWorkTypeLabel(workType),
+      status: '진행 중',
+      updatedAt: formatDate(new Date()),
+      thumbnailUrl,
+    };
+
+    // 최근 프로젝트 맨 앞에 추가
+    setProjects((prev) => [newProject, ...prev]);
+    setIsModalOpen(false);
+  };
 
   return (
     <>
-      <Header>
-        <TitleGroup>
-          <Title>반가워요! 창작의 과정을 정리해볼까요?</Title>
-          <Subtitle>나의 창작을 권리로 정리하세요.</Subtitle>
-        </TitleGroup>
-        <NewProjectButton type="button" onClick={() => navigate('/projects/new')}>
-          <PlusImg src={plusIcon} alt="" />새 프로젝트
-        </NewProjectButton>
-      </Header>
+      <Page>
+        <Header>
+          <TitleGroup>
+            <Title>반가워요! 오늘도 창작의 과정을 정리해볼까요?</Title>
+            <Subtitle>나의 창작을 권리로 정리하세요.</Subtitle>
+          </TitleGroup>
+          <NewProjectButton type="button" onClick={() => setIsModalOpen(true)}>
+            <PlusImg src={plusIcon} alt="" />새 프로젝트
+          </NewProjectButton>
+        </Header>
+
+        {projects.length > 0 && (
+          <Sections>
+            <Section>
+              <SectionTitle>최근 프로젝트</SectionTitle>
+              <ProjectRow>
+                {projects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </ProjectRow>
+            </Section>
+            <Section>
+              <SectionTitle>자료실</SectionTitle>
+              <LibraryRow>
+                {library.map(({ key, ...item }) => (
+                  <LibraryCard key={key} {...item} />
+                ))}
+              </LibraryRow>
+            </Section>
+          </Sections>
+        )}
+      </Page>
 
       {projects.length === 0 && (
         <EmptyState>
@@ -114,7 +232,9 @@ export default function HomePage() {
         </EmptyState>
       )}
 
-      {/* TODO: projects.length > 0 일 때 프로젝트 카드 그리드 */}
+      {isModalOpen && (
+        <NewProjectModal onClose={() => setIsModalOpen(false)} onSubmit={handleCreate} />
+      )}
     </>
   );
 }
