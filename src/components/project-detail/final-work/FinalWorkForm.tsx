@@ -12,6 +12,7 @@ import {
 import { getWorkTypeSummary } from '../../../constants/workTypes';
 import { useProjectStore } from '../../../store/projectStore';
 import type { Project } from '../../../types/project';
+import { createRegisteredAt } from '../../../utils/registeredAt';
 import { colors } from '../../../styles/theme';
 
 interface Props {
@@ -64,6 +65,8 @@ export default function FinalWorkForm({ project, showAlert }: Props) {
       imageName: image.file.name,
       description: description.trim(),
       updatedAt: new Date().toISOString(),
+      // 작품 교체·설명 수정 때는 FinalWorkView가 기존 값을 그대로 유지
+      registeredAt: createRegisteredAt(),
     });
   };
 

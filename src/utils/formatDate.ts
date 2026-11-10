@@ -10,6 +10,12 @@ export function formatDate(iso: string, separator = '.') {
     .join(separator);
 }
 
+/** ISO 날짜 → 'HH:mm' (예: 14:08) */
+export function formatTime(iso: string) {
+  const date = new Date(iso);
+  return [date.getHours(), date.getMinutes()].map((n) => String(n).padStart(2, '0')).join(':');
+}
+
 /**
  * 'YYYY.MM.DD' 입력 → Date (형식이 다르거나 없는 날짜면 null)
  * 예: '2026.10.20' → 2026-10-20, '2026.13.01' / '2026-10-20' → null

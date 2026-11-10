@@ -19,6 +19,7 @@ import type { MaterialType } from '../../constants/materialTypes';
 import { useProjectStore } from '../../store/projectStore';
 import type { ProcessMaterial } from '../../types/project';
 import { formatDate, parseDotDate } from '../../utils/formatDate';
+import { createRegisteredAt } from '../../utils/registeredAt';
 import { colors } from '../../styles/theme';
 
 interface Props {
@@ -103,6 +104,8 @@ export default function MaterialModal({ projectId, material, onClose }: Props) {
       createdAt: parseDotDate(date)!.toISOString(),
       thumbnailUrl,
       imageName: image?.name ?? material?.imageName,
+      // 수정할 때는 처음 등록 시각 유지
+      registeredAt: material ? material.registeredAt : createRegisteredAt(),
     };
 
     if (isEdit) updateMaterial(projectId, saved);

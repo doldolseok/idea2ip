@@ -24,6 +24,10 @@ export const colors = {
   chipPositiveBg: '#EEF3FF', // 완료/준비됨 칩
   disabledText: '#98A5B9',
   userBubbleBg: '#F0F4FF',
+  // 창작 기여 정리
+  contributionMuted: '#6F7A90', // 보조 문구
+  contributionBorder: '#E2E8F2', // 타임라인/패널 카드 테두리
+  chevron: '#A0A9B9',
   tabBarBg: '#F3F6FB',
   tabBarBorder: '#E4EAF3',
   tabActiveBorder: '#DDE6F5',

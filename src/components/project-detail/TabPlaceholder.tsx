@@ -2,12 +2,18 @@ import styled from 'styled-components';
 import DetailCard from './DetailCard';
 import { colors } from '../../styles/theme';
 
-// 아직 디자인이 없는 탭의 빈 자리 (탭별 컴포넌트가 생기면 ProjectDetailPage의 TAB_CONTENT에서 교체)
+// 아직 디자인이 없는 탭의 빈 자리 (탭별 컴포넌트가 생기면 ProjectDetailPage의 renderTabContent에서 교체)
+// message를 넘기면 그 문구로 빈 상태 안내 (예: 창작 기여 정리 탭에 자료가 없을 때)
 
-export default function TabPlaceholder({ label }: { label: string }) {
+interface Props {
+  label?: string;
+  message?: string;
+}
+
+export default function TabPlaceholder({ label, message }: Props) {
   return (
     <Card>
-      <Text>{label} 화면은 준비 중이에요.</Text>
+      <Text>{message ?? `${label} 화면은 준비 중이에요.`}</Text>
     </Card>
   );
 }

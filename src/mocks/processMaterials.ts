@@ -4,6 +4,7 @@ const SAMPLE_MATERIALS: ProcessMaterial[] = [
   {
     id: 'material-1',
     type: 'sketch',
+    imageName: 'character_sketch.png',
     title: '초기 스케치',
     description: '캐릭터 실루엣과 포즈 구상',
     createdAt: '2026-10-01T09:00:00+09:00',
@@ -11,6 +12,7 @@ const SAMPLE_MATERIALS: ProcessMaterial[] = [
   {
     id: 'material-2',
     type: 'ai',
+    imageName: 'ai_reference_01.png',
     aiTool: 'Midjourney',
     title: '컬러 러프',
     description: '달빛 톤 배색 시안 3종',
@@ -19,6 +21,7 @@ const SAMPLE_MATERIALS: ProcessMaterial[] = [
   {
     id: 'material-3',
     type: 'manual',
+    imageName: 'edited_v2.png',
     title: '최종 채색',
     description: '배경 정리 및 디테일 보정',
     createdAt: '2026-10-20T09:00:00+09:00',

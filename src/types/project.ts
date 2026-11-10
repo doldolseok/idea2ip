@@ -21,6 +21,8 @@ export interface FinalWork {
   description: string;
   /** ISO 8601 문자열 */
   updatedAt: string;
+  /** 처음 저장한 시각 (창작 기여 타임라인 정렬용, utils/registeredAt 참고) */
+  registeredAt?: string;
 }
 
 /** 제작 과정 탭의 타임라인 항목 (제작자료) */
@@ -35,6 +37,8 @@ export interface ProcessMaterial {
   /** ISO 8601 문자열 */
   createdAt: string;
   thumbnailUrl?: string;
-  /** 업로드한 이미지 파일명 (수정 모달에서 표시) */
+  /** 업로드한 이미지 파일명 (수정 모달, 창작 기여 정리 "연결 자료"에서 표시) */
   imageName?: string;
+  /** 등록한 시각 (창작 기여 타임라인 정렬용, 없으면 createdAt 사용. utils/registeredAt 참고) */
+  registeredAt?: string;
 }
