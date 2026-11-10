@@ -13,6 +13,16 @@ export interface Project {
   thumbnailUrl?: string;
 }
 
+/** 최종 작품 탭에 저장한 최종 작품 (프로젝트당 1개) */
+export interface FinalWork {
+  /** 업로드 이미지 미리보기 URL (서버 업로드 전이라 blob URL, 새로고침하면 사라짐) */
+  imageUrl: string;
+  imageName: string;
+  description: string;
+  /** ISO 8601 문자열 */
+  updatedAt: string;
+}
+
 /** 제작 과정 탭의 타임라인 항목 (제작자료) */
 export interface ProcessMaterial {
   id: string;

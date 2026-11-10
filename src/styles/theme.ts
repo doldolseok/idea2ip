@@ -15,6 +15,9 @@ export const colors = {
   cardActiveBorder: '#90A6E9', // 카드 hover/선택 테두리
   textStrong: '#17213A', // 타임라인 항목 제목
   textMuted: '#98A3B5',
+  textHint: '#66758F', // 최종 작품 탭 안내/요약 문구
+  softBlueBorder: '#D5E0FA', // 드롭 영역 점선, 작품 교체 등 흰색 보조 버튼 테두리
+  softBlueBg: '#F7F9FF', // 드롭 영역, 이미지 미리보기 배경
   tabBarBg: '#F3F6FB',
   tabBarBorder: '#E4EAF3',
   tabActiveBorder: '#DDE6F5',

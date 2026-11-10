@@ -4,6 +4,8 @@ import StatusBadge from '../components/StatusBadge';
 import ProjectTabs from '../components/project-detail/ProjectTabs';
 import ProcessTab from '../components/project-detail/ProcessTab';
 import TabPlaceholder from '../components/project-detail/TabPlaceholder';
+import FinalWorkTab from '../components/project-detail/final-work/FinalWorkTab';
+import type { Project } from '../types/project';
 import { DEFAULT_PROJECT_TAB, PROJECT_TABS, isProjectTabKey } from '../constants/projectTabs';
 import type { ProjectTabKey } from '../constants/projectTabs';
 import { useProjectStore } from '../store/projectStore';
@@ -12,10 +14,23 @@ import { colors } from '../styles/theme';
 // 프로젝트 상세 (/projects/:projectId?tab=process)
 // 탭별 내용 컴포넌트를 만들면 아래 renderTabContent에 추가
 
-function renderTabContent(tab: ProjectTabKey, projectId: string) {
+function renderTabContent(
+  tab: ProjectTabKey,
+  project: Project,
+  changeTab: (tab: ProjectTabKey) => void,
+) {
   switch (tab) {
     case 'process':
-      return <ProcessTab projectId={projectId} />;
+      return <ProcessTab projectId={project.id} />;
+    case 'final':
+      // key: 프로젝트가 바뀌면 입력 중이던 값 초기화
+      return (
+        <FinalWorkTab
+          key={project.id}
+          project={project}
+          onGoToInterview={() => changeTab('interview')}
+        />
+      );
     default:
       return <TabPlaceholder label={PROJECT_TABS.find((t) => t.key === tab)?.label ?? ''} />;
   }
@@ -29,6 +44,8 @@ export default function ProjectDetailPage() {
   // 선택한 탭은 URL(?tab=)에 저장 → 새로고침/뒤로가기에도 유지
   const tabParam = searchParams.get('tab');
   const activeTab = isProjectTabKey(tabParam) ? tabParam : DEFAULT_PROJECT_TAB;
+
+  const changeTab = (tab: ProjectTabKey) => setSearchParams({ tab }, { replace: true });
 
   // 없는 프로젝트(잘못된 주소 등)는 내 프로젝트 목록으로
   if (!project) return <Navigate to="/projects" replace />;
@@ -46,7 +63,7 @@ export default function ProjectDetailPage() {
 
         <ProjectTabs
           activeTab={activeTab}
-          onChange={(tab) => setSearchParams({ tab }, { replace: true })}
+          onChange={changeTab}
         />
 
         <TabPanel
@@ -54,7 +71,7 @@ export default function ProjectDetailPage() {
           id={`project-tabpanel-${activeTab}`}
           aria-labelledby={`project-tab-${activeTab}`}
         >
-          {renderTabContent(activeTab, project.id)}
+          {renderTabContent(activeTab, project, changeTab)}
         </TabPanel>
       </Content>
     </Page>

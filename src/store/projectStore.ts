@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { MOCK_MATERIALS_BY_PROJECT } from '../mocks/processMaterials';
-import type { ProcessMaterial, Project } from '../types/project';
+import type { FinalWork, ProcessMaterial, Project } from '../types/project';
 
 // TODO: 백엔드 API 연동 시 TanStack Query로 교체 (현재는 임시 목업 데이터, 새로고침하면 초기화됨)
 // 빈 배열로 바꾸면 "프로젝트가 없을 때" 화면을 확인할 수 있어요.
@@ -38,6 +38,10 @@ interface ProjectState {
   addMaterial: (projectId: string, material: ProcessMaterial) => void;
   /** 같은 id의 제작자료를 교체 (타임라인 순서 유지) */
   updateMaterial: (projectId: string, material: ProcessMaterial) => void;
+  /** 프로젝트 ID별 최종 작품 (없으면 최종 작품 탭은 등록 화면) */
+  finalWorkByProjectId: Record<string, FinalWork>;
+  /** 최종 작품 저장 / 이미지 교체 / 설명 수정 (일부 값만 바꿀 때도 사용) */
+  saveFinalWork: (projectId: string, finalWork: FinalWork) => void;
 }
 
 export const useProjectStore = create<ProjectState>()((set) => ({
@@ -65,7 +69,17 @@ export const useProjectStore = create<ProjectState>()((set) => ({
         ),
       },
     })),
+  // TODO: 최종 작품 API 연동 시 교체 (지금은 목업 프로젝트도 최종 작품 없이 시작)
+  finalWorkByProjectId: {},
+  saveFinalWork: (projectId, finalWork) =>
+    set((state) => ({
+      finalWorkByProjectId: { ...state.finalWorkByProjectId, [projectId]: finalWork },
+    })),
 }));
+
+/** 프로젝트의 최종 작품 (없으면 undefined) */
+export const useFinalWork = (projectId: string) =>
+  useProjectStore((state) => state.finalWorkByProjectId[projectId]);
 
 // selector가 매번 새 배열을 반환하면 무한 렌더링이 생기므로 고정된 빈 배열 사용
 const NO_MATERIALS: ProcessMaterial[] = [];

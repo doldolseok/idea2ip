@@ -1,7 +1,5 @@
-import { useRef } from 'react';
-import type { ChangeEvent } from 'react';
 import styled from 'styled-components';
-import { SUPPORTED_IMAGE_ACCEPT, isSupportedImage } from '../../utils/image';
+import { useImageFileInput } from '../../hooks/useImageFileInput';
 import { colors } from '../../styles/theme';
 
 interface Props {
@@ -15,21 +13,14 @@ interface Props {
 
 /** "이미지 파일 등록" 박스 + 파일선택 버튼 (새 프로젝트, 제작 과정 자료 추가 모달 공통) */
 export default function ImageUploadBox({ file, existingName, onChange, onInvalid }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return; // 파일 선택 창에서 취소한 경우 기존 선택 유지
-
-    if (!isSupportedImage(selected)) {
-      e.target.value = ''; // 같은 파일을 다시 골라도 onChange가 다시 실행되게
+  const { openPicker, fileInput } = useImageFileInput({
+    onSelect: onChange,
+    // 잘못된 형식을 고르면 기존 선택도 비움
+    onInvalid: () => {
       onChange(null);
       onInvalid();
-      return;
-    }
-
-    onChange(selected);
-  };
+    },
+  });
 
   return (
     <Box>
@@ -39,15 +30,10 @@ export default function ImageUploadBox({ file, existingName, onChange, onInvalid
           {file?.name ?? existingName ?? 'PNG, JPG, 화면 캡처/렌더링 이미지 파일을 업로드 해주세요.'}
         </Desc>
       </Text>
-      <FileButton type="button" onClick={() => inputRef.current?.click()}>
+      <FileButton type="button" onClick={openPicker}>
         파일선택
       </FileButton>
-      <HiddenInput
-        ref={inputRef}
-        type="file"
-        accept={SUPPORTED_IMAGE_ACCEPT}
-        onChange={handleChange}
-      />
+      {fileInput}
     </Box>
   );
 }
@@ -103,8 +89,4 @@ const FileButton = styled.button`
   &:hover {
     background: ${colors.card};
   }
-`;
-
-const HiddenInput = styled.input`
-  display: none;
 `;
