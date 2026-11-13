@@ -5,7 +5,7 @@ import ProjectListItem, { CreateProjectItem } from '../components/ProjectListIte
 import { useNewProjectModal } from '../hooks/useNewProjectModal';
 import { useProjectStore } from '../store/projectStore';
 import type { ProjectStatus } from '../types/project';
-import { colors } from '../styles/theme';
+import { colors, media, pagePadding } from '../styles/theme';
 
 type Filter = 'all' | ProjectStatus;
 
@@ -74,7 +74,7 @@ export default function MyProjectsPage() {
 
 /* 제목 기준 위 80px, 사이드바와 50px */
 const Page = styled.div`
-  padding: 80px 50px 60px;
+  ${pagePadding}
 `;
 
 /* 카드 목록은 제목보다 12px 왼쪽에서 시작 (Figma 기준) */
@@ -83,6 +83,11 @@ const Content = styled.div`
   flex-direction: column;
   gap: 50px;
   margin-left: -12px;
+
+  ${media.tablet} {
+    gap: 32px;
+    margin-left: 0;
+  }
 `;
 
 const Header = styled.section`
@@ -90,6 +95,10 @@ const Header = styled.section`
   flex-direction: column;
   gap: 22px;
   padding: 0 12px;
+
+  ${media.tablet} {
+    padding: 0;
+  }
 `;
 
 const TitleGroup = styled.div`
@@ -100,6 +109,7 @@ const TitleGroup = styled.div`
 
 const Title = styled.h1`
   margin: 0;
+  word-break: keep-all;
   color: ${colors.text};
   font-size: 28px;
   font-weight: 700;
@@ -117,6 +127,15 @@ const Chips = styled.div`
   display: flex;
   align-items: center;
   gap: 14px;
+
+  /* 모바일: 칩이 넘치면 가로 스크롤 */
+  ${media.mobile} {
+    gap: 8px;
+    margin: 0 -16px;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 `;
 
 const Chip = styled.button<{ $active: boolean }>`
@@ -129,6 +148,12 @@ const Chip = styled.button<{ $active: boolean }>`
   border: 0;
   border-radius: 20px;
   cursor: pointer;
+  flex-shrink: 0;
+
+  ${media.mobile} {
+    min-height: 40px;
+  }
+
   transition:
     background 0.15s,
     color 0.15s;
@@ -138,4 +163,8 @@ const List = styled.div`
   display: flex;
   flex-direction: column;
   gap: 28px;
+
+  ${media.mobile} {
+    gap: 12px;
+  }
 `;

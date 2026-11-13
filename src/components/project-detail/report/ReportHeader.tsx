@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import SectionHeader from '../SectionHeader';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 interface Props {
   title: string;
@@ -30,6 +30,12 @@ const Header = styled.div`
   justify-content: space-between;
   gap: 24px;
   min-height: 64px;
+
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 `;
 
 const Meta = styled.div`
@@ -39,6 +45,11 @@ const Meta = styled.div`
   gap: 3px;
   flex-shrink: 0;
   text-align: right;
+
+  ${media.mobile} {
+    align-items: flex-start;
+    text-align: left;
+  }
 `;
 
 const MetaTitle = styled.p`

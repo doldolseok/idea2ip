@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { Pill } from '../components/project-detail/interview/interview.styles';
 import { GUIDE_STEPS } from '../constants/guide';
-import { colors } from '../styles/theme';
+import { colors, media, pagePadding } from '../styles/theme';
 
 // 사이드바 "사용 가이드" (/guide)
 // 왼쪽 단계 목록에서 고른 단계의 안내와 자주 묻는 질문을 오른쪽에 표시 (선택 상태는 화면 안에서만)
@@ -70,7 +70,7 @@ export default function GuidePage() {
 
 /* 제목 위 80px, 사이드바와 50px */
 const Page = styled.div`
-  padding: 80px 50px 60px;
+  ${pagePadding}
 `;
 
 const Header = styled.header`
@@ -81,6 +81,7 @@ const Header = styled.header`
 
 const Title = styled.h1`
   margin: 0;
+  word-break: keep-all;
   color: ${colors.text};
   font-size: 28px;
   font-weight: 700;
@@ -100,6 +101,14 @@ const Body = styled.div`
   align-items: flex-start;
   gap: 36px;
   margin-top: 52px;
+
+  /* 태블릿 이하: 단계 목록 위, 내용 카드 아래로 쌓기 */
+  ${media.tablet} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+    margin-top: 32px;
+  }
 `;
 
 const card = `
@@ -113,6 +122,12 @@ const StepNav = styled.nav`
   flex: 0 0 250px;
   min-height: 610px;
   padding: 13px 11px;
+
+  ${media.tablet} {
+    flex: none;
+    min-height: 0;
+    padding: 8px;
+  }
 `;
 
 const StepList = styled.ol`
@@ -122,6 +137,18 @@ const StepList = styled.ol`
   margin: 0;
   padding: 0;
   list-style: none;
+
+  /* 태블릿 이하: 단계 버튼을 가로로 나열하고 넘치면 가로 스크롤 */
+  ${media.tablet} {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    li {
+      flex-shrink: 0;
+    }
+  }
 `;
 
 const StepButton = styled.button<{ $selected: boolean }>`
@@ -143,6 +170,11 @@ const StepButton = styled.button<{ $selected: boolean }>`
   &:hover {
     background: ${({ $selected }) => ($selected ? colors.selectedBg : colors.bg)};
   }
+
+  ${media.tablet} {
+    width: auto;
+    height: 44px;
+  }
 `;
 
 /* 안쪽 여백 24px */
@@ -155,6 +187,14 @@ const Content = styled.section`
   flex-direction: column;
   gap: 22px;
   padding: 24px;
+
+  ${media.tablet} {
+    min-height: 0;
+  }
+
+  ${media.mobile} {
+    padding: 20px 16px;
+  }
 `;
 
 const StepIntro = styled.div`

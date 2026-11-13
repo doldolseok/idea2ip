@@ -87,6 +87,7 @@ const Body = styled.p`
 
 const NextButton = styled(SubmitButton)`
   width: 241px;
+  max-width: 100%;
   font-size: 16px;
   font-weight: 500;
 `;

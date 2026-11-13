@@ -10,8 +10,9 @@ import emptyMaterialsIcon from '../../assets/empty-materials.svg';
 import DetailCard from './DetailCard';
 import TimelineItem from './TimelineItem';
 import PrimaryButton from '../PrimaryButton';
+import StatusMessage, { StatusButton } from '../StatusMessage';
 import { useProjectMaterials, useProjectStore } from '../../store/projectStore';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 // 프로젝트 상세 > "제작 과정" 탭: 창작 과정 타임라인
 // - 제작자료 있음: 오른쪽 위 "새 제작자료" 버튼 + 타임라인 목록
@@ -65,8 +66,12 @@ export default function ProcessTab({ projectId }: { projectId: string }) {
         {!isEmpty && <NewMaterialButton onClick={openModal} />}
       </Header>
 
-      {!current ? <p role="status">창작 자료를 불러오는 중입니다.</p> : current.error ? (
-        <div role="alert"><p>{current.error}</p><button type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button></div>
+      {!current ? <StatusMessage message="창작 자료를 불러오는 중입니다." /> : current.error ? (
+        <StatusMessage
+          role="alert"
+          message={current.error}
+          action={<StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>}
+        />
       ) : isEmpty ? (
         <EmptyState>
           <EmptyMessage>
@@ -122,6 +127,13 @@ const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+
+  /* 모바일: 제목 아래에 새 제작자료 버튼 */
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
 `;
 
 const TitleGroup = styled.div`
@@ -153,6 +165,15 @@ const Timeline = styled.ol`
   margin: 31px 0 0 -23px;
   padding: 0;
   list-style: none;
+
+  ${media.tablet} {
+    margin-left: 0;
+  }
+
+  ${media.mobile} {
+    gap: 16px;
+    margin-top: 20px;
+  }
 `;
 
 /* Figma: 카드 위쪽에서 147px 지점부터 높이 318px 영역, 내용은 세로 가운데 */
@@ -164,6 +185,11 @@ const EmptyState = styled.div`
   gap: 36px;
   min-height: 318px;
   margin: 51px 0 36px;
+
+  ${media.mobile} {
+    min-height: 240px;
+    margin: 24px 0;
+  }
 `;
 
 const EmptyMessage = styled.div`

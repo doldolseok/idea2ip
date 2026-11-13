@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 // 리포트(Copyright Brief) 탭 공통 스타일
 
@@ -21,6 +21,13 @@ export const ListRow = styled.div<{ $height: number }>`
   width: 100%;
   height: ${({ $height }) => $height}px;
   padding: 0 12px;
+
+  ${media.mobile} {
+    height: auto;
+    min-height: ${({ $height }) => $height}px;
+    padding: 8px 10px;
+  }
+
   text-align: left;
   background: ${colors.card};
   border: 1px solid ${colors.contributionBorder};
@@ -114,6 +121,11 @@ export const BlueButton = styled.button`
     color: ${colors.contributionMuted};
     background: ${colors.rowBg};
     cursor: not-allowed;
+  }
+
+  ${media.mobile} {
+    min-height: 44px;
+    font-size: 13px;
   }
 `;
 

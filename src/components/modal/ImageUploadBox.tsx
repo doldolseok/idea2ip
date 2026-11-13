@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { useImageFileInput } from '../../hooks/useImageFileInput';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 interface Props {
   file: File | null;
@@ -44,6 +44,10 @@ const Box = styled.div`
   justify-content: space-between;
   gap: 24px;
   padding: 10px 14px;
+
+  ${media.mobile} {
+    gap: 12px;
+  }
   background: #f9faff;
   border: 1px solid ${colors.border};
   border-radius: 10px;
@@ -88,5 +92,9 @@ const FileButton = styled.button`
 
   &:hover {
     background: ${colors.card};
+  }
+
+  ${media.mobile} {
+    min-height: 40px;
   }
 `;

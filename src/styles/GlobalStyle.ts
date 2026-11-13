@@ -1,9 +1,22 @@
 import { createGlobalStyle } from 'styled-components';
-import { colors } from './theme';
+import { colors, media, sidebarWidths } from './theme';
 
 export const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
     box-sizing: border-box;
+  }
+
+  /* 사이드바 너비: 메인 영역만 덮는 모달/패널 오버레이가 이 값만큼 왼쪽을 비움 */
+  :root {
+    --sidebar-width: ${sidebarWidths.desktop}px;
+
+    ${media.tablet} {
+      --sidebar-width: ${sidebarWidths.tablet}px;
+    }
+
+    ${media.mobile} {
+      --sidebar-width: ${sidebarWidths.mobile}px;
+    }
   }
 
   html, body, #root {
@@ -19,7 +32,7 @@ export const GlobalStyle = createGlobalStyle`
     -webkit-font-smoothing: antialiased;
   }
 
-  button, input {
+  button, input, textarea, select {
     font-family: inherit;
   }
 `;

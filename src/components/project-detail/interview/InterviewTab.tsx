@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import InterviewReady from './InterviewReady';
 import InterviewComplete from './InterviewComplete';
+import styled from 'styled-components';
 import InterviewMessages from './InterviewMessages';
-import InterviewAnswerForm from './InterviewAnswerForm';
-import { getInterviewStatus, startInterview, INTERVIEW_FIELD_LABELS, INTERVIEW_STATUS_LABELS } from '../../../api/interview';
+import InterviewChat from './InterviewChat';
+import StatusMessage, { StatusButton } from '../../StatusMessage';
+import { colors } from '../../../styles/theme';
+import { getInterviewStatus, startInterview } from '../../../api/interview';
 import type { ServerInterview } from '../../../api/interview';
 import type { ProjectTabKey } from '../../../constants/projectTabs';
-import { Panel, PanelTitle } from './interview.styles';
+import { PanelTitle } from './interview.styles';
 
 export default function InterviewTab({ projectId, onChangeTab }: { projectId: string; onChangeTab: (tab: ProjectTabKey) => void }) {
   const [session, setSession] = useState<ServerInterview>();
@@ -50,29 +53,59 @@ export default function InterviewTab({ projectId, onChangeTab }: { projectId: st
       setStarting(false);
     }
   };
-  if (loaded?.projectId !== projectId || loaded.attempt !== attempt) return <p role="status">인터뷰 상태를 불러오는 중입니다.</p>;
-  if (!session) return <div role="alert"><p>{error}</p><button type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button></div>;
-  if (session.status === 'COMPLETED') return <><InterviewComplete onNext={() => onChangeTab('contribution')} /><InterviewMessages projectId={projectId} refreshKey={attempt + messageRevision} /></>;
-  if (session?.status === 'IN_PROGRESS') return (
-    <Panel $ratio={1} aria-busy={starting}>
-      <PanelTitle>AI 인터뷰</PanelTitle>
-      <InterviewMessages projectId={projectId} refreshKey={attempt + messageRevision} />
-      {error && <p role="alert">{error}</p>}
-      {session.currentQuestion ? <>
-        <h3>{INTERVIEW_FIELD_LABELS[session.currentQuestion.targetField]}</h3>
-        <p style={{ whiteSpace: 'pre-wrap' }}>{session.currentQuestion.content}</p>
-        {session.currentQuestion.reason && <p>{session.currentQuestion.reason}</p>}
-        {!!session.currentQuestion.materialRefs.length && <ul>{session.currentQuestion.materialRefs.map((ref, index) => <li key={index}>{ref.title}</li>)}</ul>}
-        <InterviewAnswerForm key={session.currentQuestion.messageId} projectId={projectId} questionId={session.currentQuestion.messageId}
-          onBusyChange={setAnswerBusy} onAnswered={(next) => { setSession(next); setMessageRevision((value) => value + 1); }} />
-      </> : <p role="status">{session.nextQuestionPending ? '다음 질문 생성 대기 중입니다.' : '현재 질문이 없습니다.'}</p>}
-      <button type="button" disabled={starting || answerBusy} onClick={() => setAttempt((value) => value + 1)}>현재 상태 새로고침</button>
-      {session.nextQuestionPending && <button type="button" disabled={starting || answerBusy} onClick={handleStart}>{starting ? '질문 생성 중…' : '질문 생성 재시도'}</button>}
-      <ul>{session.fieldStates.map((field) => <li key={field.field}>{INTERVIEW_FIELD_LABELS[field.field]} / {INTERVIEW_STATUS_LABELS[field.status]} {field.summary}</li>)}</ul>
-    </Panel>
+  if (loaded?.projectId !== projectId || loaded.attempt !== attempt) return <StatusMessage message="인터뷰 상태를 불러오는 중입니다." />;
+  if (!session) return (
+    <StatusMessage role="alert" message={error}
+      action={<StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>} />
   );
-  return <>
-    {error && <p role="alert">{error}</p>}
+  if (session.status === 'COMPLETED') return (
+    <Completed>
+      <InterviewComplete onNext={() => onChangeTab('contribution')} />
+      {/* 완료 후 대화 내역 (디자인에 없음, 진행 중 화면의 말풍선 카드 재사용) */}
+      <HistoryCard aria-label="인터뷰 대화 내역">
+        <PanelTitle>대화 내역</PanelTitle>
+        <InterviewMessages projectId={projectId} refreshKey={attempt + messageRevision} />
+      </HistoryCard>
+    </Completed>
+  );
+  if (session?.status === 'IN_PROGRESS') return (
+    <InterviewChat
+      projectId={projectId}
+      session={session}
+      refreshKey={attempt + messageRevision}
+      error={error}
+      starting={starting}
+      answerBusy={answerBusy}
+      onBusyChange={setAnswerBusy}
+      onAnswered={(next) => { setSession(next); setMessageRevision((value) => value + 1); }}
+      onRefresh={() => setAttempt((value) => value + 1)}
+      onRetryQuestion={handleStart}
+    />
+  );
+  return <Ready>
+    {error && <StatusMessage role="alert" message={error} />}
     <InterviewReady projectId={projectId} onStart={handleStart} starting={starting} onGoToProcess={() => onChangeTab('process')} />
-  </>;
+  </Ready>;
 }
+
+const Completed = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const HistoryCard = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: ${colors.card};
+  border: 1px solid ${colors.cardBorder};
+  border-radius: 18px;
+`;
+
+const Ready = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
