@@ -5,6 +5,10 @@ import type { MaterialDetail } from '../../api/materials';
 import { MATERIAL_TYPES } from '../../constants/materialTypes';
 import { useProjectStore } from '../../store/projectStore';
 import MaterialImage from './MaterialImage';
+import styled from 'styled-components';
+import StatusMessage, { StatusButton } from '../StatusMessage';
+import { CancelButton, ModalActions } from '../modal/modalForm.styles';
+import { colors } from '../../styles/theme';
 
 export default function MaterialDetailModal({ projectId, materialId, onClose, onDeleted }: {
   projectId: string; materialId: string; onClose: () => void; onDeleted: () => void;
@@ -57,27 +61,104 @@ export default function MaterialDetailModal({ projectId, materialId, onClose, on
   const detail = current?.detail;
   return (
     <ModalShell titleId="material-detail-title" title="창작 자료 상세" onClose={() => { if (!deleteLock.current) onClose(); }} width={598}>
-      {!current ? <p role="status">자료 정보를 불러오는 중입니다.</p> : current.error ? (
-        <div role="alert"><p>{current.error}</p><button type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button></div>
+      <Body>
+      {!current ? <StatusMessage message="자료 정보를 불러오는 중입니다." /> : current.error ? (
+        <StatusMessage role="alert" message={current.error}
+          action={<StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>} />
       ) : detail && (
         <>
-        <dl style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.8 }}>
-          <dt>자료 제목</dt><dd>{detail.title}</dd>
-          <dt>자료 유형</dt><dd>{MATERIAL_TYPES.find((item) => item.value === detail.type)?.label}</dd>
-          <dt>설명</dt><dd>{detail.description || '미입력'}</dd>
-          <dt>사용한 AI 도구</dt><dd>{detail.aiTool || '미입력'}</dd>
-          <dt>실제 제작 날짜</dt><dd>{detail.productionDate || '미입력'}</dd>
-          <dt>첨부 이미지</dt><dd style={{ marginLeft: 0 }}>{detail.files?.length ? <ul style={{ listStyle: 'none', padding: 0 }}>{detail.files.map((file) => <li key={file.fileId} style={{ marginBottom: 16 }}>
-            <MaterialImage materialId={materialId} fileId={file.fileId} fileName={file.fileName} />
-            <p style={{ marginTop: 4 }}>{file.fileName}</p>
-          </li>)}</ul> : '없음'}</dd>
-        </dl>
-        {deleteError && <p role="alert">{deleteError}</p>}
-        <button type="button" disabled={deleting} onClick={handleDelete} style={{ color: '#b42318', marginTop: 20 }}>
-          {deleting ? '삭제 중…' : '창작 자료 삭제'}
-        </button>
+        <List>
+          <Item><dt>자료 제목</dt><dd>{detail.title}</dd></Item>
+          <Item><dt>자료 유형</dt><dd>{MATERIAL_TYPES.find((item) => item.value === detail.type)?.label}</dd></Item>
+          <Item><dt>설명</dt><dd>{detail.description || '미입력'}</dd></Item>
+          <Item><dt>사용한 AI 도구</dt><dd>{detail.aiTool || '미입력'}</dd></Item>
+          <Item><dt>실제 제작 날짜</dt><dd>{detail.productionDate || '미입력'}</dd></Item>
+          <Item><dt>첨부 이미지</dt><dd>{detail.files?.length ? <Files>{detail.files.map((file) => <li key={file.fileId}>
+            <Preview><MaterialImage materialId={materialId} fileId={file.fileId} fileName={file.fileName} /></Preview>
+            <FileName>{file.fileName}</FileName>
+          </li>)}</Files> : '없음'}</dd></Item>
+        </List>
+        {deleteError && <StatusMessage role="alert" message={deleteError} />}
+        <ModalActions>
+          <CancelButton type="button" onClick={() => { if (!deleteLock.current) onClose(); }}>닫기</CancelButton>
+          <DeleteButton type="button" disabled={deleting} onClick={handleDelete}>
+            {deleting ? '삭제 중…' : '창작 자료 삭제'}
+          </DeleteButton>
+        </ModalActions>
         </>
       )}
+      </Body>
     </ModalShell>
   );
 }
+
+const Body = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 0 28px;
+`;
+
+const List = styled.dl`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+`;
+
+/* 모달 입력칸 라벨(14px 굵게) + 값(13px)과 같은 글자 스타일 */
+const Item = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  dt {
+    color: ${colors.text};
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    color: ${colors.textSecondary};
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+`;
+
+const Files = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+`;
+
+const Preview = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: ${colors.softBlueBg};
+  border: 1px solid ${colors.softBlueBorder};
+  border-radius: 10px;
+`;
+
+const FileName = styled.p`
+  margin: 6px 0 0;
+  color: ${colors.textSecondary};
+  font-size: 12px;
+  overflow-wrap: anywhere;
+`;
+
+/* 디자인에 없는 삭제 버튼: 취소 버튼 모양 + 경고색 글자 */
+const DeleteButton = styled(CancelButton)`
+  color: ${colors.required};
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+`;

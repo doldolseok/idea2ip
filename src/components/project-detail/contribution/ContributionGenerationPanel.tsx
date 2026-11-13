@@ -1,4 +1,9 @@
 import { useRef, useState } from 'react';
+import styled from 'styled-components';
+import { Pill } from '../interview/interview.styles';
+import { StatusButton } from '../../StatusMessage';
+import { colors } from '../../../styles/theme';
+import { CONTRIBUTION_GENERATION_LABELS } from './contributionLabels';
 import { ContributionGenerationError, generateContributions } from '../../../api/contributions';
 import type { ContributionGeneration, GenerateContributionsInput } from '../../../api/contributions';
 
@@ -39,15 +44,42 @@ export default function ContributionGenerationPanel({ projectId, expectedRevisio
       }
     } finally { lock.current = false; setBusy(false); }
   };
-  const labels = { QUEUED: '생성 대기', RUNNING: '생성 중', SUCCEEDED: '생성 완료', FAILED: '생성 실패' };
-  return <section aria-label="기여 후보 생성" aria-busy={busy}>
-    {expectedRevision === undefined && <p>기여 검토 목록 조회가 연결되면 후보 생성을 사용할 수 있습니다.</p>}
-    {current && <p role="status">{labels[current.status]}</p>}
-    {current?.failure && <p role="alert">{current.failure.message}</p>}
-    {current?.status === 'FAILED' && !hasRequest && <p>이 작업의 원래 요청 리비전이 없어 여기서는 재시도할 수 없습니다.</p>}
-    {error && <p role="alert">{error}</p>}
-    <button type="button" onClick={submit} disabled={busy || expectedRevision === undefined || current?.status === 'QUEUED' || current?.status === 'RUNNING' || (current?.status === 'FAILED' && (!current.failure?.retryable || !hasRequest))}>
-      {busy ? '요청 중…' : current?.status === 'FAILED' ? '실패한 작업 재시도' : current?.status === 'SUCCEEDED' ? '기여 후보 다시 생성' : hasRequest ? '동일 요청 상태 확인' : '기여 후보 생성'}
-    </button>
-  </section>;
+  const labels = CONTRIBUTION_GENERATION_LABELS;
+  const messages = [
+    expectedRevision === undefined ? { alert: false, text: '기여 검토 목록 조회가 연결되면 후보 생성을 사용할 수 있습니다.' } : null,
+    current?.failure ? { alert: true, text: current.failure.message } : null,
+    current?.status === 'FAILED' && !hasRequest ? { alert: false, text: '이 작업의 원래 요청 리비전이 없어 여기서는 재시도할 수 없습니다.' } : null,
+    error ? { alert: true, text: error } : null,
+  ].filter((item): item is { alert: boolean; text: string } => !!item);
+  return <Wrap aria-label="기여 후보 생성" aria-busy={busy}>
+    <Controls>
+      {current && <Pill role="status" $tone={current.status === 'FAILED' ? 'neutral' : 'positive'} $width={72}>{labels[current.status]}</Pill>}
+      <StatusButton type="button" onClick={submit} disabled={busy || expectedRevision === undefined || current?.status === 'QUEUED' || current?.status === 'RUNNING' || (current?.status === 'FAILED' && (!current.failure?.retryable || !hasRequest))}>
+        {busy ? '요청 중…' : current?.status === 'FAILED' ? '실패한 작업 재시도' : current?.status === 'SUCCEEDED' ? '기여 후보 다시 생성' : hasRequest ? '동일 요청 상태 확인' : '기여 후보 생성'}
+      </StatusButton>
+    </Controls>
+    {messages.map((item, index) => <Notice key={index} role={item.alert ? 'alert' : undefined} $alert={item.alert}>{item.text}</Notice>)}
+  </Wrap>;
 }
+
+const Wrap = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+`;
+
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const Notice = styled.p<{ $alert: boolean }>`
+  max-width: 320px;
+  margin: 0;
+  color: ${({ $alert }) => ($alert ? colors.required : colors.contributionMuted)};
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: right;
+`;

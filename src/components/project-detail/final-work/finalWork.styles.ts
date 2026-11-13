@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 // 최종 작품 탭 공통 스타일 (등록 화면 / 저장 후 화면)
 
@@ -9,6 +9,11 @@ export const CardsRow = styled.div`
   display: flex;
   align-items: stretch;
   gap: 16px;
+
+  /* 태블릿 이하: 이미지 카드 위, 정보 카드 아래로 쌓기 */
+  ${media.tablet} {
+    flex-direction: column;
+  }
 `;
 
 /** 흰색 카드 (테두리 없음) */
@@ -20,6 +25,10 @@ export const Panel = styled.section<{ $ratio: number }>`
   padding: 20px 14px;
   background: ${colors.card};
   border-radius: 14px;
+
+  ${media.tablet} {
+    flex: none;
+  }
 `;
 
 export const PanelTitle = styled.h3`
@@ -51,6 +60,11 @@ export const SoftButton = styled.button`
 
   &:hover {
     background: ${colors.softBlueBg};
+  }
+
+  /* 모바일: 터치하기 쉬운 높이 */
+  ${media.mobile} {
+    height: 40px;
   }
 `;
 

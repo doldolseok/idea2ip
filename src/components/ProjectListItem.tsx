@@ -4,7 +4,7 @@ import StatusBadge from './StatusBadge';
 import { getWorkTypeLabel } from '../constants/workTypes';
 import type { Project } from '../types/project';
 import { formatDate } from '../utils/formatDate';
-import { colors } from '../styles/theme';
+import { colors, media } from '../styles/theme';
 import ProjectThumbnail from './ProjectThumbnail';
 
 // "내 프로젝트" 목록의 가로형 프로젝트 카드 + "새 프로젝트 만들기" 카드
@@ -80,13 +80,28 @@ const Item = styled.article<{ $clickable?: boolean }>`
   &:hover {
     border-color: ${colors.cardActiveBorder};
   }
+
+  ${media.mobile} {
+    gap: 12px;
+    padding: 12px;
+  }
 `;
 
 const Left = styled.div<{ $gap?: number }>`
   display: flex;
   align-items: center;
   gap: ${({ $gap = 20 }) => $gap}px;
+  flex: 1;
   min-width: 0;
+
+  ${media.mobile} {
+    gap: 12px;
+
+    & > img {
+      width: 64px;
+      height: 64px;
+    }
+  }
 
   & > img {
     display: block;
@@ -108,27 +123,54 @@ const Thumbnail = styled.div`
     height: 100%;
     object-fit: cover;
   }
+
+  ${media.mobile} {
+    width: 72px;
+    height: 64px;
+    border-radius: 12px;
+  }
 `;
 
 const Info = styled.div`
   display: flex;
   flex-direction: column;
   gap: 18px;
-  min-width: 239px;
+  flex: 1;
+  min-width: 0;
+
+  ${media.desktop} {
+    flex: none;
+    min-width: 239px;
+  }
+
+  ${media.mobile} {
+    gap: 8px;
+  }
 `;
 
 const TopRow = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 32px;
+
+  /* 좁으면 상태 뱃지를 아래 줄로 */
+  ${media.tablet} {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
 `;
 
 const TextGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 118px;
+  min-width: 0;
+  max-width: 100%;
   line-height: normal;
+
+  ${media.mobile} {
+    gap: 4px;
+  }
 `;
 
 const Title = styled.h3`
@@ -136,14 +178,27 @@ const Title = styled.h3`
   color: ${colors.text};
   font-size: 18px;
   font-weight: 600;
+  /* 긴 제목은 한 줄 말줄임 */
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+
+  ${media.mobile} {
+    font-size: 16px;
+  }
 `;
 
 const Desc = styled.p`
   margin: 0;
   color: ${colors.textTertiary};
   font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+
+  ${media.mobile} {
+    font-size: 14px;
+  }
 `;
 
 const ListStatusBadge = styled(StatusBadge)`
@@ -173,5 +228,12 @@ const OutlineButton = styled.button`
 
   &:hover {
     background: ${colors.bg};
+  }
+
+  ${media.mobile} {
+    width: auto;
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 16px;
   }
 `;

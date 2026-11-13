@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 // AI 인터뷰 탭 시작 전 화면 공통 스타일 (Figma 03-A / 03-A1)
 
@@ -15,6 +15,15 @@ export const Panel = styled.section<{ $ratio: number }>`
   background: ${colors.card};
   border: 1px solid ${colors.panelBorder};
   border-radius: 14px;
+
+  ${media.tablet} {
+    flex: none;
+    min-height: 0;
+  }
+
+  ${media.mobile} {
+    padding: 16px 14px;
+  }
 `;
 
 export const PanelTitle = styled.h3`

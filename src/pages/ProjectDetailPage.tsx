@@ -12,9 +12,10 @@ import type { Project } from '../types/project';
 import { DEFAULT_PROJECT_TAB, PROJECT_TABS, isProjectTabKey } from '../constants/projectTabs';
 import type { ProjectTabKey } from '../constants/projectTabs';
 import { useProjectStore } from '../store/projectStore';
-import { colors } from '../styles/theme';
+import { colors, media, pagePadding } from '../styles/theme';
 import { useProjectDetail } from '../hooks/useProjectDetail';
 import ProjectThumbnailUpload from '../components/ProjectThumbnailUpload';
+import StatusMessage, { StatusButton } from '../components/StatusMessage';
 
 // 프로젝트 상세 (/projects/:projectId?tab=process)
 // 탭별 내용 컴포넌트를 만들면 아래 renderTabContent에 추가
@@ -65,14 +66,19 @@ export default function ProjectDetailPage() {
 
   const changeTab = (tab: ProjectTabKey) => setSearchParams({ tab }, { replace: true });
 
-  if (detail.loading) return <Page role="status">프로젝트 정보를 불러오는 중입니다.</Page>;
+  if (detail.loading) return <Page><StatusMessage message="프로젝트 정보를 불러오는 중입니다." /></Page>;
   if (!project) return (
     <Page>
-      <p role="alert">{detail.error}</p>
-      {detail.status === 401 ? <Link to="/login">로그인하기</Link> : <>
-        <button type="button" onClick={detail.retry}>다시 시도</button>{' '}
-        <Link to="/projects">내 프로젝트로 이동</Link>
-      </>}
+      <StatusMessage
+        role="alert"
+        message={detail.error}
+        action={detail.status === 401 ? <StatusButton as={Link} to="/login">로그인하기</StatusButton> : (
+          <FeedbackActions>
+            <StatusButton type="button" onClick={detail.retry}>다시 시도</StatusButton>
+            <StatusButton as={Link} to="/projects">내 프로젝트로 이동</StatusButton>
+          </FeedbackActions>
+        )}
+      />
     </Page>
   );
 
@@ -80,12 +86,14 @@ export default function ProjectDetailPage() {
     <Page>
       <Content>
         <Header>
-          <TitleRow>
-            <Title>{project.title}</Title>
-            <StatusBadge status={project.status} />
-          </TitleRow>
-          <Subtitle>등록 준비 중인 미술 창작 프로젝트를 한곳에서 확인해요</Subtitle>
-          {project.description && <Subtitle>{project.description}</Subtitle>}
+          <HeaderText>
+            <TitleRow>
+              <Title>{project.title}</Title>
+              <StatusBadge status={project.status} />
+            </TitleRow>
+            <Subtitle>등록 준비 중인 미술 창작 프로젝트를 한곳에서 확인해요</Subtitle>
+            {project.description && <Subtitle>{project.description}</Subtitle>}
+          </HeaderText>
           <ProjectThumbnailUpload key={project.id} project={project} />
         </Header>
 
@@ -108,7 +116,7 @@ export default function ProjectDetailPage() {
 
 /* 제목 위 80px, 사이드바와 50px */
 const Page = styled.div`
-  padding: 80px 50px 60px;
+  ${pagePadding}
 `;
 
 const Content = styled.div`
@@ -116,25 +124,53 @@ const Content = styled.div`
   flex-direction: column;
 `;
 
+/* 제목 영역 + 오른쪽 썸네일 변경 버튼(디자인에 없는 UI, 제목 영역 높이를 늘리지 않게 오른쪽에 둠) */
 const Header = styled.header`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+
+  ${media.mobile} {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+`;
+
+const HeaderText = styled.div`
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-bottom: 40px;
+  min-width: 0;
+`;
+
+const FeedbackActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
 const TitleRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: 8px 18px;
 `;
 
 const Title = styled.h1`
   margin: 0;
+  word-break: keep-all;
   color: ${colors.text};
   font-size: 28px;
   font-weight: 700;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+
+  ${media.mobile} {
+    font-size: 24px;
+  }
 `;
 
 const Subtitle = styled.p`
@@ -147,4 +183,12 @@ const Subtitle = styled.p`
 /* 탭 바와 카드 사이 약 40.89px (Figma 기준) */
 const TabPanel = styled.div`
   margin-top: 40.89px;
+
+  ${media.tablet} {
+    margin-top: 32px;
+  }
+
+  ${media.mobile} {
+    margin-top: 24px;
+  }
 `;

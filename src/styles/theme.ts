@@ -41,3 +41,49 @@ export const colors = {
   overlay: 'rgba(13, 20, 38, 0.22)',
   overlayLight: 'rgba(23, 33, 58, 0.08)', // 리포트 편집 모달 / PDF 저장 패널 배경
 } as const;
+
+/**
+ * 반응형 기준 너비 (Figma는 데스크톱만 있어서 여기 값으로 줄임)
+ * - 데스크톱: 1280px 이상 (Figma 그대로)
+ * - 태블릿: 768px ~ 1279px
+ * - 모바일: 767px 이하
+ */
+export const breakpoints = {
+  tablet: 768,
+  desktop: 1280,
+} as const;
+
+/** styled-components 안에서 쓰는 미디어 쿼리 도우미 (예: `${media.mobile} { ... }`) */
+export const media = {
+  /** 태블릿 이하 (1279px 이하) */
+  tablet: `@media (max-width: ${breakpoints.desktop - 1}px)`,
+  /** 모바일 (767px 이하) */
+  mobile: `@media (max-width: ${breakpoints.tablet - 1}px)`,
+  /** 태블릿만 (768px ~ 1279px) */
+  tabletOnly: `@media (min-width: ${breakpoints.tablet}px) and (max-width: ${breakpoints.desktop - 1}px)`,
+  /** 데스크톱 (1280px 이상) */
+  desktop: `@media (min-width: ${breakpoints.desktop}px)`,
+} as const;
+
+/** 사이드바 너비 (데스크톱 / 태블릿 아이콘 메뉴 / 모바일은 상단 바) */
+export const sidebarWidths = {
+  desktop: 276,
+  tablet: 88,
+  mobile: 0,
+} as const;
+
+/** 모바일 상단 바 높이 */
+export const MOBILE_TOP_BAR_HEIGHT = 56;
+
+/** 페이지 바깥 여백 (데스크톱: 제목 위 80px · 사이드바와 50px · 아래 60px) */
+export const pagePadding = `
+  padding: 80px 50px 60px;
+
+  ${media.tablet} {
+    padding: 48px 32px 48px;
+  }
+
+  ${media.mobile} {
+    padding: 24px 16px 40px;
+  }
+`;

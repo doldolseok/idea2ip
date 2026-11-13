@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import imageIcon from '../../../assets/final-work-image.svg';
 import { SoftButton } from './finalWork.styles';
 import { useImageFileInput } from '../../../hooks/useImageFileInput';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 interface Props {
   /** 선택한 이미지 미리보기 URL (있으면 안내 대신 미리보기 표시) */
@@ -121,4 +121,8 @@ const PickButton = styled(SoftButton)`
   width: 116px;
   height: 34px;
   font-size: 13px;
+
+  ${media.mobile} {
+    height: 40px;
+  }
 `;

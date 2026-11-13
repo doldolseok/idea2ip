@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { CurrentUserError, getCurrentUser } from '../api/users';
 import type { CurrentUser } from '../api/users';
+import { colors } from '../styles/theme';
 
 export default function CurrentUserInfo() {
   const [attempt, setAttempt] = useState(0);
@@ -53,14 +54,17 @@ export default function CurrentUserInfo() {
   );
 }
 
+/* 디자인에 없는 영역이라 사이드바 글자색을 재사용해 작게 표시 */
 const Profile = styled.div`
-  padding: 12px 16px;
-  color: #68758d;
+  padding: 0 10px;
+  color: ${colors.textSecondary};
   font-size: 13px;
+  line-height: 1.4;
   overflow-wrap: anywhere;
   strong, span { display: block; }
-  strong { color: #1c2940; font-size: 15px; margin-bottom: 4px; }
-  p { margin: 0 0 8px; }
-  a, button { color: #3466ef; }
-  button { background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
+  strong { color: ${colors.textStrong}; font-size: 14px; font-weight: 600; }
+  span { color: ${colors.textTertiary}; font-size: 12px; }
+  p { margin: 0 0 4px; }
+  a, button { color: ${colors.primary}; }
+  button { min-height: 32px; background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
 `;

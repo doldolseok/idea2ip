@@ -13,18 +13,18 @@ import {
 } from './report.styles';
 import { Pill } from '../interview/interview.styles';
 import type { ReportReadiness } from '../../../api/reports';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 // 리포트 탭 1번: 생성 전 (정보 확인 목록은 시안 값 그대로 목업, 미확인이 있어도 생성 가능)
 
-export default function BriefReady({ readiness, onGenerate }: { readiness: ReportReadiness; onGenerate?: () => void }) {
+export default function BriefReady({ readiness, onGenerate, generating = false }: { readiness: ReportReadiness; onGenerate?: () => void; generating?: boolean }) {
   const titles: Record<string, string> = {
     FINAL_ARTWORK_IMAGE_REQUIRED: '최종 작품 이미지', INTERVIEW_NOT_COMPLETED: '인터뷰 완료',
     CONTRIBUTIONS_NOT_CONFIRMED: '창작 기여 확정', MATERIAL_EVIDENCE_INCOMPLETE: '자료 근거 준비',
   };
   const writtenCount = readiness.checks.filter((item) => item.status === 'READY').length;
   const unverifiedCount = readiness.checks.length - writtenCount;
-  const items = readiness.checks.map((item, index) => ({ no: index + 1, title: titles[item.code] ?? item.code, desc: item.message, status: item.status }));
+  const items = readiness.checks.map((item, index) => ({ no: String(index + 1).padStart(2, '0'), title: titles[item.code] ?? item.code, desc: item.message, status: item.status }));
 
   return (
     <>
@@ -82,11 +82,13 @@ export default function BriefReady({ readiness, onGenerate }: { readiness: Repor
             <p>미확인 정보는 임의로 작성하지 않아요.</p>
             <p>부족한 내용은 Copyright Brief의 ‘추가 확인 및 보완사항’에 그대로 남겨요.</p>
           </InfoNote>
-          {readiness.blockingReasons.map((item, index) => <p role="alert" key={`block-${index}`}>{item.message}</p>)}
-          {readiness.warnings.map((item, index) => <p key={`warning-${index}`}>{item.message}</p>)}
-          <p role="status">{readiness.canGenerate ? '서버 기준 생성 준비가 완료되었습니다.' : '필수 조건을 보완해야 리포트를 생성할 수 있습니다.'}</p>
-          {onGenerate && <GenerateButton type="button" disabled={!readiness.canGenerate} onClick={onGenerate}>
-            Copyright Brief 생성
+          <Notices>
+            {readiness.blockingReasons.map((item, index) => <Notice role="alert" $alert key={`block-${index}`}>{item.message}</Notice>)}
+            {readiness.warnings.map((item, index) => <Notice key={`warning-${index}`}>{item.message}</Notice>)}
+            <Notice role="status">{readiness.canGenerate ? '서버 기준 생성 준비가 완료되었습니다.' : '필수 조건을 보완해야 리포트를 생성할 수 있습니다.'}</Notice>
+          </Notices>
+          {onGenerate && <GenerateButton type="button" disabled={!readiness.canGenerate || generating} onClick={onGenerate}>
+            {generating ? '생성 요청 중…' : 'Copyright Brief 생성'}
           </GenerateButton>}
         </Note>
       </Card>
@@ -97,13 +99,18 @@ export default function BriefReady({ readiness, onGenerate }: { readiness: Repor
 const Card = styled(ReportCard)`
   gap: 12px;
   padding: 18px;
+
+  ${media.mobile} {
+    padding: 14px;
+  }
 `;
 
 const Top = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   min-height: 58px;
 `;
 
@@ -141,12 +148,40 @@ const Note = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
   min-height: 52px;
-  padding: 0 10px 0 12px;
+  padding: 6px 10px 6px 12px;
+
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
   background: ${colors.softBlueBg};
   border-radius: 10px;
 `;
 
 const GenerateButton = styled(BlueButton)`
   width: 220px;
+
+  ${media.mobile} {
+    width: 100%;
+  }
+
+`;
+
+/* 서버 안내 문구 (차단 사유 / 경고 / 준비 상태): 안내 박스와 같은 10px 글자 */
+const Notices = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const Notice = styled.p<{ $alert?: boolean }>`
+  margin: 0;
+  color: ${({ $alert }) => ($alert ? colors.required : colors.contributionMuted)};
+  font-size: 10px;
+  line-height: 15px;
 `;

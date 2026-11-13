@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
+import StatusMessage from '../../StatusMessage';
 import { Panel, PanelTitle, SoftButton } from './finalWork.styles';
 import { SubmitButton, TextArea, TextInput } from '../../modal/modalForm.styles';
 import { useImageFileInput } from '../../../hooks/useImageFileInput';
 import { getWorkTypeSummary } from '../../../constants/workTypes';
 import { useProjectStore } from '../../../store/projectStore';
 import type { FinalWork, Project } from '../../../types/project';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 import type { ArtworkImageResult } from '../../../api/artwork';
 import { deleteArtwork, updateArtwork } from '../../../api/artwork';
 import type { UpdateArtworkInput } from '../../../api/artwork';
@@ -19,6 +21,8 @@ interface Props {
   onUpload: (file: File) => Promise<ArtworkImageResult>;
   uploading: boolean;
   imageUrl?: string;
+  /** 서버 이미지를 불러오는 중 / 오류 안내 (미리보기 칸 안에 표시) */
+  imageStatus?: ReactNode;
 }
 
 // 최종 작품 탭 2번 상태: 저장한 최종 작품 (작품 교체 / 설명 수정)
@@ -31,6 +35,7 @@ export default function FinalWorkView({
   onUpload,
   uploading,
   imageUrl,
+  imageStatus,
 }: Props) {
   const saveFinalWork = useProjectStore((state) => state.saveFinalWork);
   const save = (changes: Partial<FinalWork>) =>
@@ -127,11 +132,11 @@ export default function FinalWorkView({
   return (
     <>
       <ImagePanel $ratio={492}>
-        <PanelTitle>{finalWork.title || '등록된 최종 작품'}</PanelTitle>
+        <PanelTitle>등록된 최종 작품</PanelTitle>
         <ImageBody>
           <PreviewBox>
-            {!imageUrl && !finalWork.imageUrl && <p>아래 작품 교체 버튼에서 이미지를 추가할 수 있습니다.</p>}
-            {(imageUrl || finalWork.imageUrl) && <img src={imageUrl || finalWork.imageUrl} alt={`${project.title} 최종 작품`} />}
+            {imageStatus ?? (!imageUrl && !finalWork.imageUrl && <EmptyText>아래 작품 교체 버튼에서 이미지를 추가할 수 있습니다.</EmptyText>)}
+            {!imageStatus && (imageUrl || finalWork.imageUrl) && <img src={imageUrl || finalWork.imageUrl} alt={`${project.title} 최종 작품`} />}
           </PreviewBox>
           <SoftButton type="button" onClick={openPicker} disabled={uploading || saving || deleting}>
             {uploading ? '저장 중…' : '작품 교체'}
@@ -164,25 +169,33 @@ export default function FinalWorkView({
           </Summary>
         </DescriptionBody>
 
-        <Actions>
-          <SoftButton
-            type="button"
-            // 편집 중 버튼을 눌러도 칸이 먼저 blur 되지 않게 (클릭에서 한 번만 저장)
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={toggleEditing}
-            disabled={saving || uploading || deleting}
-          >
-            {saving ? '저장 중…' : isEditing ? '변경 저장' : '작품 정보 수정'}
-          </SoftButton>
-          {isEditing && <SoftButton type="button" disabled={saving} onClick={() => setIsEditing(false)}>취소</SoftButton>}
-          <InterviewButton type="button" onClick={onGoToInterview} disabled={deleting}>
-            AI 인터뷰 준비 확인
-          </InterviewButton>
-        </Actions>
-        {deleteError && <p role="alert">{deleteError}</p>}
-        <SoftButton type="button" onClick={handleDelete} disabled={deleting || saving || uploading} style={{ color: '#b42318' }}>
-          {deleting ? '삭제 중…' : '최종 작품 삭제'}
-        </SoftButton>
+        <Footer>
+          {deleteError && <StatusMessage role="alert" message={deleteError} />}
+          <Actions>
+            {/* 디자인의 "설명 수정" 자리: 제목·설명 수정, 수정 중 취소, 삭제(디자인에 없음)를 같은 보조 버튼으로 나란히 */}
+            <LeftActions>
+              <SoftButton
+                type="button"
+                // 편집 중 버튼을 눌러도 칸이 먼저 blur 되지 않게 (클릭에서 한 번만 저장)
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={toggleEditing}
+                disabled={saving || uploading || deleting}
+              >
+                {saving ? '저장 중…' : isEditing ? '변경 저장' : '작품 정보 수정'}
+              </SoftButton>
+              {isEditing ? (
+                <SoftButton type="button" disabled={saving} onClick={() => setIsEditing(false)}>취소</SoftButton>
+              ) : (
+                <DeleteButton type="button" onClick={handleDelete} disabled={deleting || saving || uploading}>
+                  {deleting ? '삭제 중…' : '작품 삭제'}
+                </DeleteButton>
+              )}
+            </LeftActions>
+            <InterviewButton type="button" onClick={onGoToInterview} disabled={deleting}>
+              AI 인터뷰 준비 확인
+            </InterviewButton>
+          </Actions>
+        </Footer>
       </DescriptionPanel>
     </>
   );
@@ -225,6 +238,10 @@ const DescriptionPanel = styled(Panel)`
   justify-content: space-between;
   gap: 107px;
   padding-bottom: 8px;
+
+  ${media.tablet} {
+    gap: 32px;
+  }
 `;
 
 const DescriptionBody = styled.div`
@@ -270,13 +287,43 @@ const Summary = styled.div`
   border-radius: 14px;
 `;
 
+const Footer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
 const Actions = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+`;
+
+const LeftActions = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const DeleteButton = styled(SoftButton)`
+  color: ${colors.required};
+`;
+
+const EmptyText = styled.p`
+  margin: 0;
+  padding: 0 16px;
+  color: ${colors.textHint};
+  font-size: 14px;
+  text-align: center;
 `;
 
 const InterviewButton = styled(SubmitButton)`
   width: 148px;
   height: 37px;
+
+  ${media.mobile} {
+    width: 100%;
+    height: 44px;
+  }
 `;

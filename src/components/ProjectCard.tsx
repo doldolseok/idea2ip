@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { colors } from '../styles/theme';
+import { colors, media } from '../styles/theme';
 import { getWorkTypeLabel } from '../constants/workTypes';
 import StatusBadge from './StatusBadge';
 import type { Project } from '../types/project';
@@ -39,6 +39,7 @@ const Card = styled.article`
   justify-content: center;
   gap: 13px;
   flex-shrink: 0;
+  min-width: 0;
   padding: 16px 16px 4px 10px;
   background: ${colors.card};
   border: 1px solid ${colors.cardBorder};
@@ -49,7 +50,13 @@ const Body = styled.div`
   display: flex;
   align-items: center;
   gap: 22px;
+  min-width: 0;
   padding: 0 12px;
+
+  ${media.mobile} {
+    gap: 16px;
+    padding: 0 4px;
+  }
 `;
 
 const Thumbnail = styled.div`
@@ -73,7 +80,9 @@ const Info = styled.div`
   flex-direction: column;
   align-items: flex-end;
   gap: 14px;
+  flex: 1;
   min-width: 103px;
+  overflow: hidden;
 `;
 
 const TextGroup = styled.div`
@@ -90,6 +99,9 @@ const Title = styled.h3`
   color: ${colors.text};
   font-size: 18px;
   font-weight: 700;
+  /* 긴 제목은 한 줄 말줄임 */
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
@@ -122,4 +134,12 @@ const UpdatedAt = styled.span`
 const DetailLink = styled(Link)`
   color: ${colors.primary};
   text-decoration: underline;
+
+  /* 모바일: 터치 영역 40px */
+  ${media.mobile} {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 4px;
+  }
 `;

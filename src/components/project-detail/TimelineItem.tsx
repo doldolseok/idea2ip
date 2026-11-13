@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import penIcon from '../../assets/pen.svg';
 import type { ProcessMaterial } from '../../types/project';
 import { formatDate } from '../../utils/formatDate';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 import MaterialImage from './MaterialImage';
 
 interface Props {
@@ -32,15 +32,20 @@ export default function TimelineItem({ index, material, onEdit, onView }: Props)
               <Title>{title}</Title>
               <Desc>{description}</Desc>
             </TitleGroup>
-            <DateText>제작 날짜 {material.productionDate === null ? '미입력' : formatDate(material.productionDate ?? createdAt)}</DateText>
-            {!!material.files?.length && <Desc>첨부 {material.files.length}개 · {material.files.map((file) => file.fileName).join(', ')}</Desc>}
+            {/* 첨부 정보는 디자인에 없어 줄을 늘리지 않도록 제작 날짜 줄 뒤에 붙임 */}
+            <DateText title={material.files?.map((file) => file.fileName).join(', ')}>
+              제작 날짜 {material.productionDate === null ? '미입력' : formatDate(material.productionDate ?? createdAt)}
+              {!!material.files?.length && ` · 첨부 ${material.files.length}개`}
+            </DateText>
           </Text>
         </Left>
-        <EditButton type="button" aria-label={`${title} 상세 보기`} onClick={() => onView(material)}>상세 보기</EditButton>
-        <EditButton type="button" aria-label={`${title} 수정`} onClick={() => onEdit(material)}>
-          <img src={penIcon} alt="" width={16} height={16} />
-          수정
-        </EditButton>
+        <Actions>
+          <EditButton type="button" aria-label={`${title} 상세 보기`} onClick={() => onView(material)}>상세 보기</EditButton>
+          <EditButton type="button" aria-label={`${title} 수정`} onClick={() => onEdit(material)}>
+            <img src={penIcon} alt="" width={16} height={16} />
+            수정
+          </EditButton>
+        </Actions>
       </Card>
     </Row>
   );
@@ -50,11 +55,23 @@ const Row = styled.li`
   display: flex;
   align-items: flex-start;
   gap: 8px;
+
+  /* 모바일: 번호를 카드 위에 */
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
 `;
 
 const NumberCol = styled.div`
   padding: 4px 0;
   flex-shrink: 0;
+
+  ${media.mobile} {
+    align-self: flex-start;
+    padding: 0;
+  }
 `;
 
 const NumberBadge = styled.span`
@@ -79,6 +96,16 @@ const Card = styled.article`
   padding: 14px 10px;
   border: 1px solid ${colors.cardBorder};
   border-radius: 15px;
+
+  /* 태블릿 이하: 버튼을 내용 아래로 */
+  ${media.tablet} {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  ${media.mobile} {
+    padding: 12px;
+  }
 `;
 
 const Left = styled.div`
@@ -87,15 +114,32 @@ const Left = styled.div`
   gap: 20px;
   flex: 1;
   min-width: 0;
+
+  ${media.tablet} {
+    flex-basis: 100%;
+  }
+
+  ${media.mobile} {
+    gap: 12px;
+  }
 `;
 
 const Thumbnail = styled.div`
   width: 90px;
   height: 80px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   background: #d9d9d9;
   border-radius: 15px;
+
+  ${media.mobile} {
+    width: 72px;
+    height: 64px;
+    border-radius: 12px;
+  }
 
   img {
     display: block;
@@ -112,6 +156,10 @@ const Text = styled.div`
   flex: 1;
   min-width: 0;
   line-height: normal;
+
+  ${media.mobile} {
+    gap: 8px;
+  }
 `;
 
 /* 직접 입력한 긴 제목/설명은 한 줄로 자르고 … 표시 */
@@ -148,6 +196,18 @@ const DateText = styled.p`
   color: ${colors.textMuted};
   font-size: 14px;
   font-weight: 500;
+  ${ellipsis}
+`;
+
+const Actions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  ${media.tablet} {
+    width: 100%;
+    justify-content: flex-end;
+  }
 `;
 
 const EditButton = styled.button`
@@ -165,6 +225,13 @@ const EditButton = styled.button`
   border-radius: 15px;
   cursor: pointer;
   transition: background 0.15s;
+
+  ${media.mobile} {
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+  }
 
   &:hover {
     background: ${colors.bg};
