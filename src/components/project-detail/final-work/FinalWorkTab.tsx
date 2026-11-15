@@ -5,6 +5,7 @@ import { useArtwork } from '../../../hooks/useArtwork';
 import FinalWorkForm from './FinalWorkForm';
 import FinalWorkView from './FinalWorkView';
 import SectionHeader from '../SectionHeader';
+import StatusMessage, { StatusButton } from '../../StatusMessage';
 import { CardsRow, SoftButton, ToastSpot } from './finalWork.styles';
 import { useArtworkImage } from '../../../hooks/useArtworkImage';
 import { useAlertModal } from '../../../hooks/useAlertModal';
@@ -51,23 +52,30 @@ export default function FinalWorkTab({ project, onGoToInterview }: Props) {
   };
   return (
     <Section>
-      <SectionHeader title="최종 작품" subtitle="자료별 제작 과정과 역할을 연결할 수 있어요." />
-      {image.loading && <p role="status">저장된 이미지를 불러오는 중입니다.</p>}
-      {image.error && <div role="alert"><p>{image.error}</p><SoftButton onClick={image.retry}>다시 시도</SoftButton></div>}
+      <SectionHeader title="최종 작품 등록" subtitle="자료별 제작 과정과 역할을 연결할 수 있어요." />
       <CardsRow>
-        {artwork.loading ? <p role="status">최종 작품을 불러오는 중입니다.</p> : artwork.error ? (
-          <div role="alert"><p>{artwork.error}</p><SoftButton onClick={artwork.retry}>다시 시도</SoftButton></div>
+        {artwork.loading ? <Full><StatusMessage message="최종 작품을 불러오는 중입니다." /></Full> : artwork.error ? (
+          <Full>
+            <StatusMessage role="alert" message={artwork.error}
+              action={<StatusButton type="button" onClick={artwork.retry}>다시 시도</StatusButton>} />
+          </Full>
         ) : finalWork ? (
-          <>
-            <FinalWorkView project={project} finalWork={finalWork} showAlert={showAlert}
-              onGoToInterview={onGoToInterview} onUpload={handleUpload} uploading={uploading} imageUrl={image.url} />
-          </>
+          <FinalWorkView project={project} finalWork={finalWork} showAlert={showAlert}
+            onGoToInterview={onGoToInterview} onUpload={handleUpload} uploading={uploading} imageUrl={image.url}
+            imageStatus={image.error ? (
+              <StatusMessage role="alert" plain message={image.error}
+                action={<SoftButton type="button" onClick={image.retry}>다시 시도</SoftButton>} />
+            ) : image.loading ? <StatusMessage plain message="저장된 이미지를 불러오는 중입니다." /> : undefined} />
         ) : <FinalWorkForm project={project} showAlert={showAlert} onUpload={handleUpload} uploading={uploading} />}
         <ToastSpot>{alertNode}</ToastSpot>
       </CardsRow>
     </Section>
   );
 }
+
+const Full = styled.div`
+  flex: 1;
+`;
 
 const Section = styled.section`
   display: flex;

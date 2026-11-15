@@ -4,24 +4,27 @@ import ModalShell from '../../modal/ModalShell';
 import { CancelButton, ModalActions, ModalChip, SubmitButton } from '../../modal/modalForm.styles';
 import EvidenceTag from '../EvidenceTag';
 import { BRIEF_SECTION_META } from '../../../mocks/brief';
-import { useProjectStore } from '../../../store/projectStore';
 import type { BriefReport, BriefSectionKey } from '../../../types/brief';
 import { formatDate, formatTime } from '../../../utils/formatDate';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 interface Props {
-  projectId: string;
   report: BriefReport;
   /** 처음 선택된 섹션 (리포트 행을 눌렀으면 그 섹션) */
   initialKey: BriefSectionKey;
+  /** 서버에서 직접 편집할 수 있는 섹션 (나머지는 읽기 전용) */
+  editableKeys: BriefSectionKey[];
+  saving: boolean;
+  error?: string;
+  /** 바뀐 섹션만 전달 (서버 EDIT 요청) */
+  onSave: (changes: Partial<Record<BriefSectionKey, string>>) => void;
   onClose: () => void;
 }
 
 // 리포트 탭 4번: Copyright Brief 편집 모달
 // 섹션을 바꿔도 수정 중인 내용은 모달을 닫기 전까지 섹션별로 유지, "수정 저장" 시 바뀐 섹션만 저장
 
-export default function BriefEditModal({ projectId, report, initialKey, onClose }: Props) {
-  const updateBriefSection = useProjectStore((state) => state.updateBriefSection);
+export default function BriefEditModal({ report, initialKey, editableKeys, saving, error, onSave, onClose }: Props) {
   const [selectedKey, setSelectedKey] = useState(initialKey);
   const [drafts, setDrafts] = useState(() =>
     Object.fromEntries(report.sections.map((s) => [s.key, s.content])),
@@ -30,11 +33,16 @@ export default function BriefEditModal({ projectId, report, initialKey, onClose 
   const section = report.sections.find((s) => s.key === selectedKey) ?? report.sections[0];
   const meta = BRIEF_SECTION_META[section.key];
 
+  const editable = editableKeys.includes(section.key);
+
   const handleSave = () => {
-    report.sections.forEach((s) => {
-      if (drafts[s.key] !== s.content) updateBriefSection(projectId, s.key, drafts[s.key]);
-    });
-    onClose();
+    const changes = Object.fromEntries(
+      report.sections
+        .filter((s) => editableKeys.includes(s.key) && drafts[s.key] !== s.content)
+        .map((s) => [s.key, drafts[s.key]]),
+    ) as Partial<Record<BriefSectionKey, string>>;
+    if (!Object.keys(changes).length) { onClose(); return; }
+    onSave(changes);
   };
 
   return (
@@ -46,7 +54,7 @@ export default function BriefEditModal({ projectId, report, initialKey, onClose 
       size="lg"
       dim="light"
       shadow
-      onClose={onClose}
+      onClose={() => { if (!saving) onClose(); }}
     >
       <Body>
         <Chips role="tablist" aria-label="Copyright Brief 섹션">
@@ -73,6 +81,7 @@ export default function BriefEditModal({ projectId, report, initialKey, onClose 
           <EditorInput
             aria-label={`${section.title} 내용`}
             value={drafts[section.key]}
+            readOnly={!editable || saving}
             onChange={(e) => setDrafts((prev) => ({ ...prev, [section.key]: e.target.value }))}
           />
           <Sources>
@@ -83,6 +92,8 @@ export default function BriefEditModal({ projectId, report, initialKey, onClose 
           </Sources>
         </Editor>
 
+        {!editable && <LastEdited>이 항목은 자료와 인터뷰를 근거로 자동 정리되어 직접 편집할 수 없어요.</LastEdited>}
+        {error && <ErrorText role="alert">{error}</ErrorText>}
         {section.userEditedAt && (
           <LastEdited>
             마지막 사용자 수정 · {formatDate(section.userEditedAt)}{' '}
@@ -94,8 +105,8 @@ export default function BriefEditModal({ projectId, report, initialKey, onClose 
           <CancelButton type="button" style={{ width: 130 }} onClick={onClose}>
             변경 취소
           </CancelButton>
-          <SubmitButton type="button" style={{ width: 150 }} onClick={handleSave}>
-            수정 저장
+          <SubmitButton type="button" style={{ width: 150 }} disabled={saving} onClick={handleSave}>
+            {saving ? '저장 중…' : '수정 저장'}
           </SubmitButton>
         </Actions>
       </Body>
@@ -109,12 +120,31 @@ const Body = styled.div`
   flex-direction: column;
   min-height: 583px;
   padding: 16px 0 28px;
+
+  ${media.mobile} {
+    min-height: 0;
+    padding-bottom: 20px;
+  }
 `;
 
 const Chips = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 13px;
+
+  /* 모바일: 섹션 칩을 가로 스크롤 */
+  ${media.mobile} {
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 -16px;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    & > button {
+      flex-shrink: 0;
+    }
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -129,6 +159,10 @@ const Editor = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 310px;
+
+  ${media.mobile} {
+    min-height: 240px;
+  }
   border: 1px solid ${colors.border};
   border-radius: 10px;
 `;
@@ -175,4 +209,11 @@ const Actions = styled(ModalActions)`
   margin-top: auto;
   padding-top: 24px;
   gap: 12px;
+`;
+
+const ErrorText = styled.p`
+  margin: 12px 0 0;
+  color: ${colors.required};
+  font-size: 12px;
+  line-height: 1.4;
 `;

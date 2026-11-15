@@ -13,7 +13,7 @@ import {
   ToastAnchor,
 } from './modal/modalForm.styles';
 import { useAlertModal } from '../hooks/useAlertModal';
-import { colors } from '../styles/theme';
+import { colors, media } from '../styles/theme';
 import { WORK_TYPES } from '../constants/workTypes';
 import type { WorkType } from '../constants/workTypes';
 
@@ -89,7 +89,7 @@ export default function NewProjectModal({ onClose, onSubmit, projectCreated = fa
             onChange={setImage}
             onInvalid={() => showAlert('지원하지 않는 이미지 형식입니다.')}
           />
-          <p style={{ margin: 0, fontSize: 12 }}>{projectCreated ? '프로젝트는 생성되었습니다. 썸네일만 다시 저장할 수 있습니다.' : '썸네일은 선택 사항이며 프로젝트 생성 후 서버에 저장됩니다.'}</p>
+          <Hint>{projectCreated ? '프로젝트는 생성되었습니다. 썸네일만 다시 저장할 수 있습니다.' : '썸네일은 선택 사항이며 프로젝트 생성 후 서버에 저장됩니다.'}</Hint>
 
           <Field role="group" aria-labelledby="work-type-label">
             <Label as="p" id="work-type-label">
@@ -152,12 +152,27 @@ const NameInput = styled(TextInput)`
 const TypeList = styled.div`
   display: flex;
   gap: 12px;
+
+  /* 모바일: 유형 카드를 세로로 */
+  ${media.mobile} {
+    flex-direction: column;
+    gap: 8px;
+  }
 `;
 
 const TypeCard = styled.button<{ $selected: boolean }>`
   flex: 1;
   height: 104px;
   padding: 17px 11px;
+
+  ${media.mobile} {
+    flex: none;
+    height: auto;
+    min-height: 64px;
+    padding: 12px 14px;
+    gap: 6px;
+  }
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -190,4 +205,12 @@ const TypeLabel = styled.span`
 const TypeCategory = styled.span`
   font-size: 12px;
   font-weight: 400;
+`;
+
+/* 썸네일 선택 안내 (디자인에 없는 문구라 보조 글자색으로 작게) */
+const Hint = styled.p`
+  margin: -12px 0 0;
+  color: ${colors.muted};
+  font-size: 12px;
+  line-height: 1.4;
 `;

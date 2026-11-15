@@ -14,7 +14,8 @@ import {
   RowList,
   RowText,
 } from './interview.styles';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
+import StatusMessage, { StatusButton } from '../../StatusMessage';
 
 interface Props {
   projectId: string;
@@ -47,8 +48,11 @@ export default function InterviewReady({ projectId, onStart, onGoToProcess, star
     return () => controller.abort();
   }, [projectId, attempt]);
   const current = result?.projectId === projectId && result.attempt === attempt ? result : undefined;
-  if (!current) return <p role="status">인터뷰 준비 상태를 불러오는 중입니다.</p>;
-  if (!current.data) return <div role="alert"><p>{current.error}</p><button type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button></div>;
+  if (!current) return <StatusMessage message="인터뷰 준비 상태를 불러오는 중입니다." />;
+  if (!current.data) return (
+    <StatusMessage role="alert" message={current.error}
+      action={<StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>} />
+  );
   const data = current.data;
   const fields = data.fieldStates;
   const materialLabels: Record<string, string> = { FINAL_ARTWORK: '최종 작품 이미지', AI_MATERIAL: 'AI 활용 자료', MANUAL_EDIT_MATERIAL: '직접 수정 자료' };
@@ -64,8 +68,11 @@ export default function InterviewReady({ projectId, onStart, onGoToProcess, star
           <Title>AI 인터뷰</Title>
           <Subtitle>필수 자료가 준비되면 부족한 정보 중심으로 맞춤 질문을 생성해요.</Subtitle>
         </HeaderCopy>
-        <HeaderAside>인터뷰 시작 전 확인</HeaderAside>
-        <button type="button" onClick={() => setAttempt((value) => value + 1)}>준비 상태 새로고침</button>
+        <HeaderRight>
+          <HeaderAside>인터뷰 시작 전 확인</HeaderAside>
+          {/* 디자인에 없는 새로고침: 오른쪽 안내 문구 아래 작은 텍스트 버튼 */}
+          <RefreshButton type="button" onClick={() => setAttempt((value) => value + 1)}>준비 상태 새로고침</RefreshButton>
+        </HeaderRight>
       </Header>
 
       <Cards>
@@ -138,8 +145,8 @@ export default function InterviewReady({ projectId, onStart, onGoToProcess, star
           )}
 
           <Actions>
-            {data.blockingReasons.map((item, index) => <p role="alert" key={`block-${index}`}>{item.message}</p>)}
-            {data.warnings.map((item, index) => <p key={`warning-${index}`}>{item.message}</p>)}
+            {data.blockingReasons.map((item, index) => <Notice role="alert" $alert key={`block-${index}`}>{item.message}</Notice>)}
+            {data.warnings.map((item, index) => <Notice key={`warning-${index}`}>{item.message}</Notice>)}
             {!isReady && (
               <AddMaterialButton type="button" onClick={onGoToProcess}>
                 제작 과정에서 자료 추가 →
@@ -167,6 +174,12 @@ const Header = styled.div`
   justify-content: space-between;
   gap: 24px;
   min-height: 64px;
+
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 `;
 
 const HeaderCopy = styled.div`
@@ -203,6 +216,11 @@ const Cards = styled.div`
   display: flex;
   align-items: stretch;
   gap: 18px;
+
+  /* 태블릿 이하: 필드 상태 카드 위, 자료 준비 카드 아래 */
+  ${media.tablet} {
+    flex-direction: column;
+  }
 `;
 
 const PanelTop = styled.div`
@@ -227,6 +245,42 @@ const PrincipleNote = styled(NoteBox)`
 `;
 
 /* Figma: 버튼 영역 높이 78px, 버튼은 아래 정렬 */
+const HeaderRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+`;
+
+const RefreshButton = styled.button`
+  min-height: 32px;
+
+  ${media.mobile} {
+    min-height: 40px;
+  }
+
+  padding: 0;
+  color: ${colors.primary};
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+/* 서버 안내 문구 (차단 사유 / 경고): 캡션과 같은 크기 */
+const Notice = styled.p<{ $alert?: boolean }>`
+  margin: 0;
+  color: ${({ $alert }) => ($alert ? colors.required : colors.textHint)};
+  font-size: 10px;
+  line-height: 14px;
+`;
+
 const Actions = styled.div`
   display: flex;
   flex-direction: column;
@@ -238,6 +292,11 @@ const Actions = styled.div`
 const ActionButton = styled.button`
   width: 100%;
   height: 34px;
+
+  ${media.mobile} {
+    height: 40px;
+  }
+
   font-size: 10px;
   font-weight: 500;
   line-height: 15px;
@@ -259,6 +318,12 @@ const AddMaterialButton = styled(ActionButton)`
 /* 준비됨: 파란 버튼(38px) / 자료 부족: 회색 비활성(34px) */
 const StartButton = styled(ActionButton)`
   height: 38px;
+
+  ${media.mobile} {
+    height: 44px;
+    font-size: 13px;
+  }
+
   color: #fff;
   background: ${colors.primary};
   border: 0;

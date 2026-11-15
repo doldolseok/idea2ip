@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import ReportHeader from './ReportHeader';
 import { BlueButton, InfoNote, NumberBox, ReportCard } from './report.styles';
 import { Pill } from '../interview/interview.styles';
 import { BRIEF_GENERATION_STEPS } from '../../../mocks/brief';
-import { getGenerationStepStatuses } from '../../../utils/brief';
 import type { GenerationStepStatus } from '../../../utils/brief';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
+import type { ReportVersion } from '../../../api/reports';
 
 const STATUS_CHIP: Record<
   GenerationStepStatus,
@@ -17,16 +17,26 @@ const STATUS_CHIP: Record<
   waiting: { label: '대기', positive: false, width: 62 },
 };
 
-// 리포트 탭 2번: 생성 중 (목업 단계 진행, 완료 처리는 store가 담당)
+/** 서버 진행 단계 → 화면의 3단계 (입력 정리 / 출처 연결 / 초안 작성·PDF) */
+const STAGE_INDEX: Record<NonNullable<ReportVersion['stage']>, number> = {
+  COLLECTING_INPUT: 0,
+  LINKING_SOURCES: 1,
+  DRAFTING: 2,
+  RENDERING_PDF: 2,
+};
 
-export default function BriefGenerating({ startedAt }: { startedAt: string }) {
-  // 시작 시각 기준으로 계산 → 탭을 나갔다 와도 이어서 표시
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 200);
-    return () => window.clearInterval(timer);
-  }, []);
-  const statuses = getGenerationStepStatuses(startedAt, now);
+// 리포트 탭 2번: 생성 중 (서버 작업의 진행 단계로 표시)
+
+export default function BriefGenerating({ stage, action }: {
+  /** 서버 진행 단계 (null: 대기 중) */
+  stage: ReportVersion['stage'] | undefined;
+  /** 하단 버튼 자리 (같은 요청 상태 확인 등, 없으면 비활성 "리포트 생성 중…") */
+  action?: ReactNode;
+}) {
+  const current = stage ? STAGE_INDEX[stage] : 0;
+  const statuses: GenerationStepStatus[] = BRIEF_GENERATION_STEPS.map((_, i) =>
+    i < current ? 'done' : i === current ? 'in-progress' : 'waiting',
+  );
 
   return (
     <>
@@ -66,9 +76,11 @@ export default function BriefGenerating({ startedAt }: { startedAt: string }) {
 
         <Footer>
           <FooterText>잠시 후 생성된 Copyright Brief를 확인할 수 있어요.</FooterText>
-          <DisabledButton type="button" disabled>
-            리포트 생성 중…
-          </DisabledButton>
+          {action ?? (
+            <DisabledButton type="button" disabled>
+              리포트 생성 중…
+            </DisabledButton>
+          )}
         </Footer>
       </Card>
     </>
@@ -78,6 +90,10 @@ export default function BriefGenerating({ startedAt }: { startedAt: string }) {
 /* Figma: 안쪽 여백 28px 32px, 단계 목록 → 안내 박스 20px → 하단 11px */
 const Card = styled(ReportCard)`
   padding: 28px 32px 14px;
+
+  ${media.mobile} {
+    padding: 16px 14px 14px;
+  }
 `;
 
 const Steps = styled.ol`
@@ -94,6 +110,12 @@ const Step = styled.li`
   align-items: center;
   gap: 14px;
   height: 72px;
+
+  ${media.mobile} {
+    gap: 10px;
+    height: auto;
+    min-height: 72px;
+  }
 `;
 
 const StepNumber = styled(NumberBox)<{ $waiting: boolean }>`
@@ -149,6 +171,12 @@ const Footer = styled.div`
   justify-content: space-between;
   gap: 16px;
   margin-top: 11px;
+
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 `;
 
 const FooterText = styled.p`
@@ -160,4 +188,8 @@ const FooterText = styled.p`
 
 const DisabledButton = styled(BlueButton)`
   width: 190px;
+
+  ${media.mobile} {
+    width: 100%;
+  }
 `;

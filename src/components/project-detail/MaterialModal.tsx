@@ -3,6 +3,7 @@ import type { FormEvent, RefObject } from 'react';
 import styled from 'styled-components';
 import ModalShell from '../modal/ModalShell';
 import ImageUploadBox from '../modal/ImageUploadBox';
+import StatusMessage from '../StatusMessage';
 
 import {
   CancelButton,
@@ -24,6 +25,7 @@ import { parseDotDate } from '../../utils/formatDate';
 import { createRegisteredAt } from '../../utils/registeredAt';
 import { createMaterial, updateMaterial as patchMaterial, uploadMaterialFiles } from '../../api/materials';
 import type { CreateMaterialInput } from '../../api/materials';
+import { media } from '../../styles/theme';
 
 interface Props {
   projectId: string;
@@ -217,7 +219,7 @@ export default function MaterialModal({ projectId, material, onClose, onCreated 
               onChange={setImage}
               onInvalid={() => showAlert('JPG 또는 PNG 이미지 파일을 선택해주세요.')}
             />}
-            {uploadError && <p role="alert">{uploadError}</p>}
+            {uploadError && <StatusMessage role="alert" message={uploadError} />}
             <Field>
               <FieldLabel htmlFor="material-title">자료 제목</FieldLabel>
               <TextInput
@@ -315,11 +317,17 @@ const TypeLabel = styled(FieldLabel)`
 
 const Chips = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+
+  ${media.mobile} {
+    gap: 8px;
+  }
 `;
 
 const DateField = styled(Field)`
   width: 194px;
+  max-width: 100%;
 `;
 
 const DateInput = styled(TextInput)`

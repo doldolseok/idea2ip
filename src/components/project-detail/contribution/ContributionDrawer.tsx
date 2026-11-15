@@ -1,17 +1,36 @@
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { Pill } from '../interview/interview.styles';
 import SidePanel from '../SidePanel';
 import EvidenceTag from '../EvidenceTag';
-import type { ContributionStepResult, ContributionTimelineItem } from '../../../types/contribution';
-import { STEP_KIND_LABEL, formatStepNumber } from '../../../utils/contribution';
-import { formatDate, formatTime } from '../../../utils/formatDate';
-import { colors } from '../../../styles/theme';
+import type { ContributionEvidence } from '../../../types/contribution';
+import { formatStepNumber } from '../../../utils/contribution';
+import { colors, media } from '../../../styles/theme';
+
+/** 패널에 표시할 단계 내용 (서버 단계 상세 응답에서 만듦) */
+export interface ContributionDrawerView {
+  kindLabel: string;
+  title: string;
+  /** 제목 아래 보조 문구 (등록 시각 / 검토 상태) */
+  meta?: string;
+  description: string;
+  fileNames: string[];
+  aiUsage: string[];
+  humanContribution: string[];
+  evidence: (ContributionEvidence & { href?: string; detail?: string })[];
+}
 
 interface Props {
-  item: ContributionTimelineItem;
-  step: ContributionStepResult;
   index: number;
   total: number;
+  /** 단계 제목 (상세를 불러오기 전에도 표시) */
+  title: string;
+  kindLabel: string;
+  /** 없으면 status 안내만 표시 (불러오는 중 / 오류) */
+  view?: ContributionDrawerView;
+  status?: ReactNode;
+  /** 내용 아래 추가 버튼 (검토 결정, 디자인에 없음) */
+  extra?: ReactNode;
   onClose: () => void;
   onMove: (index: number) => void;
   /** "제작 과정에서 보기 ↗" → 제작 과정 탭 */
@@ -22,10 +41,13 @@ interface Props {
 // 초기 스케치 / AI 활용 / 직접 수정 / 최종 작품 모두 이 컴포넌트 하나로 표시
 
 export default function ContributionDrawer({
-  item,
-  step,
   index,
   total,
+  title,
+  kindLabel,
+  view,
+  status,
+  extra,
   onClose,
   onMove,
   onViewProcess,
@@ -40,22 +62,21 @@ export default function ContributionDrawer({
           <Pill $tone="positive" $width={36}>
             {formatStepNumber(index)}
           </Pill>
-          <KindLabel>{STEP_KIND_LABEL[item.kind]}</KindLabel>
+          <KindLabel>{view?.kindLabel ?? kindLabel}</KindLabel>
         </StageLabel>
         <CloseButton type="button" aria-label="상세 패널 닫기" onClick={onClose}>
           ×
         </CloseButton>
       </Top>
 
-      <Title id="contribution-drawer-title">{item.title}</Title>
-      <DateText>
-        {formatDate(item.registeredAt)} {formatTime(item.registeredAt)}
-      </DateText>
+      <Title id="contribution-drawer-title">{view?.title ?? title}</Title>
+      {view?.meta && <DateText>{view.meta}</DateText>}
 
+      {!view ? <StatusArea>{status}</StatusArea> : (
       <Sections>
         <DescriptionBox>
           <SectionTitle>단계 설명</SectionTitle>
-          <Body>{step.description}</Body>
+          <Body>{view.description}</Body>
         </DescriptionBox>
 
         <Section $minHeight={154}>
@@ -65,12 +86,12 @@ export default function ContributionDrawer({
               제작 과정에서 보기 ↗
             </LinkButton>
           </SectionHead>
-          {item.fileNames.length > 0 ? (
+          {view.fileNames.length > 0 ? (
             <Files>
-              {item.fileNames.map((name) => (
-                <FileRow key={name}>
+              {view.fileNames.map((name, i) => (
+                <FileRow key={`${name}-${i}`}>
                   <FileIcon aria-hidden="true">□</FileIcon>
-                  <FileName>{name}</FileName>
+                  <FileName title={name}>{name}</FileName>
                 </FileRow>
               ))}
             </Files>
@@ -81,24 +102,32 @@ export default function ContributionDrawer({
 
         <Section $minHeight={108}>
           <SectionTitle>AI 활용 내용</SectionTitle>
-          <Bullets items={step.aiUsage} />
+          <Bullets items={view.aiUsage} />
         </Section>
 
         <Section $minHeight={128}>
           <SectionTitle>직접 창작·수정한 부분</SectionTitle>
-          <Bullets items={step.humanContribution} />
+          <Bullets items={view.humanContribution} />
         </Section>
 
         <EvidenceSection>
           <EvidenceTitle>근거 및 출처</EvidenceTitle>
-          {step.evidence.map((evidence) => (
-            <EvidenceRow key={`${evidence.kind}-${evidence.source}`}>
+          {view.evidence.length === 0 && <Body>연결된 출처가 없어요.</Body>}
+          {view.evidence.map((evidence, i) => (
+            <EvidenceRow key={`${evidence.kind}-${evidence.source}-${i}`}>
               <EvidenceTag kind={evidence.kind} size="sm" />
-              <EvidenceSource>{evidence.source}</EvidenceSource>
+              <EvidenceSource title={evidence.detail ?? evidence.source}>
+                {evidence.href ? (
+                  <a href={evidence.href} target="_blank" rel="noreferrer">{evidence.source}</a>
+                ) : evidence.source}
+              </EvidenceSource>
             </EvidenceRow>
           ))}
         </EvidenceSection>
       </Sections>
+      )}
+
+      {extra && <Extra>{extra}</Extra>}
 
       {/* 첫 단계: 다음만 / 중간: 이전·다음 / 마지막: 이전만 (하나면 가운데 정렬) */}
       <Nav $single={hasPrev !== hasNext}>
@@ -120,8 +149,8 @@ export default function ContributionDrawer({
 function Bullets({ items }: { items: string[] }) {
   return (
     <BulletList>
-      {items.map((text) => (
-        <li key={text}>• {text}</li>
+      {items.map((text, i) => (
+        <li key={`${text}-${i}`}>• {text}</li>
       ))}
     </BulletList>
   );
@@ -130,6 +159,10 @@ function Bullets({ items }: { items: string[] }) {
 /* Figma: 오른쪽에 붙은 365px 카드, 화면 높이만큼, 오버레이 없음 */
 const Drawer = styled(SidePanel)`
   padding: 34px 38px 27px 37px;
+
+  ${media.mobile} {
+    padding: 24px 16px;
+  }
 `;
 
 const Top = styled.div`
@@ -170,6 +203,13 @@ const CloseButton = styled.button`
 
   &:hover {
     background: ${colors.rowBg};
+  }
+
+  /* 모바일: 터치하기 쉬운 크기 */
+  ${media.mobile} {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
   }
 `;
 
@@ -246,6 +286,11 @@ const LinkButton = styled.button`
 
   &:hover {
     text-decoration: underline;
+  }
+
+  ${media.mobile} {
+    min-height: 40px;
+    font-size: 12px;
   }
 `;
 
@@ -326,6 +371,10 @@ const EvidenceRow = styled.div`
 `;
 
 const EvidenceSource = styled.span`
+  a {
+    color: ${colors.primary};
+  }
+
   min-width: 0;
   overflow: hidden;
   color: ${colors.contributionMuted};
@@ -345,6 +394,12 @@ const Nav = styled.div<{ $single: boolean }>`
 
 const NavButton = styled.button`
   height: 40px;
+
+  ${media.mobile} {
+    height: 44px;
+    font-size: 13px;
+  }
+
   font-size: 11px;
   line-height: normal;
   border: 0;
@@ -373,4 +428,15 @@ const NextButton = styled(NavButton)`
   &:hover {
     background: ${colors.primaryHover};
   }
+`;
+
+const StatusArea = styled.div`
+  margin-top: 24px;
+`;
+
+const Extra = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
 `;

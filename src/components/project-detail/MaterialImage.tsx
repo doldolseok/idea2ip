@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { getMaterialImage } from '../../api/materials';
+import { colors } from '../../styles/theme';
 
 export default function MaterialImage({ materialId, fileId, fileName, compact = false }: {
   materialId: string; fileId: number; fileName: string; compact?: boolean;
@@ -28,11 +30,40 @@ export default function MaterialImage({ materialId, fileId, fileName, compact = 
     };
   }, [materialId, fileId, key]);
   const current = result?.key === key ? result : undefined;
-  if (current?.error) return <div role="alert" title={current.error} style={{ fontSize: compact ? 11 : 14 }}>
-    <span>{compact ? '이미지 오류' : current.error}</span>{' '}
-    <button type="button" onClick={() => setAttempt((value) => value + 1)}>재시도</button>
-  </div>;
-  if (!current?.url) return <span role="status" style={{ fontSize: compact ? 11 : 14 }}>이미지 로딩 중…</span>;
-  return <img src={current.url} alt={fileName} style={{ maxWidth: '100%', maxHeight: compact ? 80 : 360, objectFit: compact ? 'cover' : 'contain' }}
+  if (current?.error) return <State role="alert" title={current.error} $compact={compact}>
+    <span>{compact ? '이미지 오류' : current.error}</span>
+    <RetryButton type="button" onClick={() => setAttempt((value) => value + 1)}>재시도</RetryButton>
+  </State>;
+  if (!current?.url) return <State role="status" $compact={compact}>이미지 로딩 중…</State>;
+  return <Image src={current.url} alt={fileName} $compact={compact}
     onError={() => setResult({ key, error: '이미지를 표시할 수 없습니다.' })} />;
 }
+
+const State = styled.div<{ $compact: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  color: ${colors.textSecondary};
+  font-size: ${({ $compact }) => ($compact ? 11 : 14)}px;
+  text-align: center;
+`;
+
+const RetryButton = styled.button`
+  padding: 2px 8px;
+  color: ${colors.primary};
+  font-size: inherit;
+  background: ${colors.card};
+  border: 1px solid ${colors.softBlueBorder};
+  border-radius: 9px;
+  cursor: pointer;
+`;
+
+const Image = styled.img<{ $compact: boolean }>`
+  display: block;
+  max-width: 100%;
+  max-height: ${({ $compact }) => ($compact ? '100%' : '360px')};
+  object-fit: ${({ $compact }) => ($compact ? 'cover' : 'contain')};
+`;

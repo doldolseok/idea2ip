@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { SIDEBAR_WIDTH } from '../Sidebar';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 interface Props {
   /** 패널 너비 (창작 기여 정리 365, PDF 저장 374) */
@@ -50,8 +49,8 @@ const Overlay = styled.div`
   top: 0;
   right: 0;
   bottom: 0;
-  left: ${SIDEBAR_WIDTH}px;
-  z-index: 49;
+  left: var(--sidebar-width);
+  z-index: 249;
   background: ${colors.overlayLight};
 `;
 
@@ -60,7 +59,8 @@ const Panel = styled.aside`
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: 250;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -68,4 +68,11 @@ const Panel = styled.aside`
   border: 1px solid ${colors.contributionBorder};
   border-radius: 18px;
   box-shadow: -8px 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* 모바일: 화면 전체 너비로 열림 */
+  ${media.mobile} {
+    width: 100% !important;
+    border-radius: 0;
+    overscroll-behavior: contain;
+  }
 `;

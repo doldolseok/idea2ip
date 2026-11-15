@@ -3,6 +3,12 @@ import { getMaterial } from '../../api/materials';
 import type { ProcessMaterial } from '../../types/project';
 import ModalShell from '../modal/ModalShell';
 import MaterialModal from './MaterialModal';
+import styled from 'styled-components';
+import StatusMessage, { StatusButton } from '../StatusMessage';
+
+const Body = styled.div`
+  padding: 20px 0 28px;
+`;
 
 export default function MaterialEditModal({ projectId, material, onClose, onSaved }: {
   projectId: string; material: ProcessMaterial; onClose: () => void; onSaved: () => void;
@@ -27,6 +33,10 @@ export default function MaterialEditModal({ projectId, material, onClose, onSave
   const current = result?.attempt === attempt ? result : undefined;
   if (current?.material) return <MaterialModal projectId={projectId} material={current.material} onClose={onClose} onCreated={onSaved} />;
   return <ModalShell titleId="material-edit-title" title="창작 자료 수정" onClose={onClose}>
-    {current?.error ? <div role="alert"><p>{current.error}</p><button type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</button></div> : <p role="status">자료 정보를 불러오는 중입니다.</p>}
+    <Body>
+      {current?.error
+        ? <StatusMessage role="alert" message={current.error} action={<StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>} />
+        : <StatusMessage message="자료 정보를 불러오는 중입니다." />}
+    </Body>
   </ModalShell>;
 }

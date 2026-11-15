@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 // 모달 입력 폼 공통 스타일 (새 프로젝트, 제작 과정 자료 추가, Copyright Brief 편집)
 // 모달마다 Figma 값이 조금씩 달라서 필요한 곳은 styled(...)로 덮어써서 사용
@@ -23,6 +23,12 @@ export const ModalChip = styled.button<{ $active: boolean }>`
 
   &:hover {
     color: ${colors.selected};
+  }
+
+  /* 모바일: 터치하기 쉬운 높이 */
+  ${media.mobile} {
+    height: 40px;
+    border-radius: 20px;
   }
 `;
 
@@ -81,6 +87,17 @@ export const ModalActions = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 16px;
+
+  /* 모바일: 버튼이 화면 너비를 나눠 가짐 */
+  ${media.mobile} {
+    gap: 8px;
+
+    & > button {
+      flex: 1 1 0;
+      width: auto !important;
+      min-width: 0;
+    }
+  }
 `;
 
 /* 경고 토스트 기준점: 버튼 바로 위에 살짝 겹치게 */

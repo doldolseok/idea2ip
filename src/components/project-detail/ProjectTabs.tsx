@@ -1,7 +1,8 @@
+import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { PROJECT_TABS } from '../../constants/projectTabs';
 import type { ProjectTabKey } from '../../constants/projectTabs';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 interface Props {
   activeTab: ProjectTabKey;
@@ -11,8 +12,18 @@ interface Props {
 // 프로젝트 상세 상단 탭 바 (제작 과정 / 최종 작품 / AI 인터뷰 / 창작 기여 정리 / 리포트)
 
 export default function ProjectTabs({ activeTab, onChange }: Props) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // 모바일 가로 스크롤: 선택된 탭이 탭 바 가운데에 보이도록 (탭 바만 스크롤, 페이지는 그대로)
+  useEffect(() => {
+    const list = listRef.current;
+    const tab = list?.querySelector<HTMLElement>(`#project-tab-${activeTab}`);
+    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+    list.scrollTo({ left: tab.offsetLeft - (list.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' });
+  }, [activeTab]);
+
   return (
-    <TabList role="tablist" aria-label="프로젝트 상세 메뉴">
+    <TabList ref={listRef} role="tablist" aria-label="프로젝트 상세 메뉴">
       {PROJECT_TABS.map(({ key, label, icon, width, height }) => {
         const active = key === activeTab;
         return (
@@ -45,6 +56,22 @@ const TabList = styled.div`
   background: ${colors.tabBarBg};
   border: 1px solid ${colors.tabBarBorder};
   border-radius: 16px;
+
+  /* 모바일: 탭을 고정 폭으로 두고 가로 스크롤 */
+  ${media.mobile} {
+    position: relative;
+    display: flex;
+    gap: 6px;
+    height: 84px;
+    padding: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-padding: 0 8px;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 `;
 
 const Tab = styled.button<{ $active: boolean }>`
@@ -70,6 +97,13 @@ const Tab = styled.button<{ $active: boolean }>`
 
   &:hover {
     color: ${colors.primary};
+  }
+
+  ${media.mobile} {
+    flex: 0 0 auto;
+    min-width: 100px;
+    padding: 0 12px;
+    gap: 10px;
   }
 `;
 

@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { SIDEBAR_WIDTH } from '../Sidebar';
-import { colors } from '../../styles/theme';
+import { colors, media } from '../../styles/theme';
 
 interface Props {
   /** 제목 요소 id (aria-labelledby 연결용) */
@@ -73,12 +72,19 @@ const Overlay = styled.div<{ $dim: 'default' | 'light' }>`
   top: 0;
   right: 0;
   bottom: 0;
-  left: ${SIDEBAR_WIDTH}px;
-  z-index: 100;
+  left: var(--sidebar-width);
+  /* 모바일 상단 바·메뉴보다 위 */
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+
+  /* 모바일: 화면 너비에 맞추고 아래쪽에서 올라오는 시트처럼 */
+  ${media.mobile} {
+    align-items: flex-end;
+    padding: 12px 0 0;
+  }
   background: ${({ $dim }) => ($dim === 'light' ? colors.overlayLight : colors.overlay)};
 `;
 
@@ -89,6 +95,15 @@ const Dialog = styled.div<{ $shadow: boolean }>`
   padding: 0 28px;
   background: ${colors.card};
   border-radius: 18px;
+
+  /* 모바일: 너비 꽉 차게, 내용이 길면 모달 안에서 스크롤 */
+  ${media.mobile} {
+    width: 100% !important;
+    max-height: calc(100dvh - 12px);
+    padding: 0 16px;
+    border-radius: 18px 18px 0 0;
+    overscroll-behavior: contain;
+  }
   box-shadow: ${({ $shadow }) => ($shadow ? '0 10px 15px rgba(0, 0, 0, 0.15)' : 'none')};
 `;
 

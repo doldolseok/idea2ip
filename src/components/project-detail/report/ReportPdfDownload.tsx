@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
 import { getReportPdf } from '../../../api/reports';
+import { BlueButton, OutlineBlueButton } from './report.styles';
+import { colors } from '../../../styles/theme';
 
-export default function ReportPdfDownload({ projectId, versionId, available }: { projectId: string; versionId: number; available: boolean }) {
+export default function ReportPdfDownload({ projectId, versionId, available, variant = 'primary' }: {
+  projectId: string; versionId: number; available: boolean;
+  /** primary: PDF 저장 패널의 파란 버튼 / outline: 버전 목록의 보조 버튼 */
+  variant?: 'primary' | 'outline';
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const controller = useRef<AbortController | undefined>(undefined);
@@ -25,8 +32,26 @@ export default function ReportPdfDownload({ projectId, versionId, available }: {
       if (!request.signal.aborted) setError(cause instanceof Error ? cause.message : 'PDF 다운로드에 실패했습니다.');
     } finally { controller.current = undefined; setBusy(false); }
   };
-  return <div>
-    <button type="button" disabled={!available || busy} onClick={download}>{busy ? 'PDF 다운로드 중…' : 'PDF 다운로드'}</button>
-    {error && <p role="alert">{error}</p>}
-  </div>;
+  const Button = variant === 'primary' ? BlueButton : OutlineBlueButton;
+  return <Wrap>
+    <Button type="button" disabled={!available || busy} onClick={download}>{busy ? 'PDF 다운로드 중…' : 'PDF 다운로드'}</Button>
+    {error && <ErrorText role="alert">{error}</ErrorText>}
+  </Wrap>;
 }
+
+const Wrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  button {
+    width: 100%;
+  }
+`;
+
+const ErrorText = styled.p`
+  margin: 0;
+  color: ${colors.required};
+  font-size: 11px;
+  line-height: 1.4;
+`;

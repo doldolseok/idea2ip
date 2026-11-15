@@ -1,12 +1,13 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import SidePanel from '../SidePanel';
-import { BlueButton, OutlineBlueButton } from './report.styles';
+import { OutlineBlueButton } from './report.styles';
 import { useAlertModal } from '../../../hooks/useAlertModal';
 import type { BriefReport } from '../../../types/brief';
 import { buildBriefFileName } from '../../../utils/brief';
 import { formatDate } from '../../../utils/formatDate';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 const INCLUDED_ITEMS = [
   'Brief 본문',
@@ -19,17 +20,19 @@ const INCLUDED_ITEMS = [
 interface Props {
   projectTitle: string;
   report: BriefReport;
+  /** 실제 PDF 다운로드 버튼 (서버 PDF, ReportPdfDownload) */
+  downloadButton: ReactNode;
   onClose: () => void;
 }
 
 // 리포트 탭 5번: PDF 저장 패널 (오른쪽, 옅은 배경)
 // 포함 항목 체크는 화면에서만 바뀌고, 실제 PDF 생성은 서버 연동 후
 
-export default function BriefPdfPanel({ projectTitle, report, onClose }: Props) {
+export default function BriefPdfPanel({ projectTitle, report, downloadButton, onClose }: Props) {
   const [checked, setChecked] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(INCLUDED_ITEMS.map((item) => [item, true])),
   );
-  const { showAlert, alertNode } = useAlertModal(1800, 'subtle');
+  const { alertNode } = useAlertModal(1800, 'subtle');
 
   return (
     <Panel width={374} overlay labelledBy="brief-pdf-title" onClose={onClose}>
@@ -78,13 +81,8 @@ export default function BriefPdfPanel({ projectTitle, report, onClose }: Props) 
 
       <Actions>
         <ToastAnchor>{alertNode}</ToastAnchor>
-        {/* TODO: PDF 생성 API 연동 (checked 항목 반영) */}
-        <BlueButton
-          type="button"
-          onClick={() => showAlert('PDF 다운로드는 서버 연동 후 제공돼요.')}
-        >
-          PDF 다운로드
-        </BlueButton>
+        {/* 포함 항목 체크는 화면 표시용 (서버 PDF는 버전 전체를 내려받음) */}
+        {downloadButton}
         <OutlineBlueButton type="button" onClick={onClose}>
           취소
         </OutlineBlueButton>
@@ -96,6 +94,10 @@ export default function BriefPdfPanel({ projectTitle, report, onClose }: Props) 
 /* Figma: 374px, 위 38 / 좌우 22 / 아래 74 */
 const Panel = styled(SidePanel)`
   padding: 38px 22px 74px;
+
+  ${media.mobile} {
+    padding: 24px 16px 32px;
+  }
 `;
 
 const Top = styled.div`
@@ -129,6 +131,13 @@ const CloseButton = styled.button`
   border: 0;
   border-radius: 14px;
   cursor: pointer;
+
+  /* 모바일: 터치하기 쉬운 크기 */
+  ${media.mobile} {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+  }
 `;
 
 const Subtitle = styled.p`
@@ -149,6 +158,11 @@ const Box = styled.section`
 /* Figma: 부제 아래 큰 여백(약 90px) 후 파일 이름 */
 const FileBox = styled(Box)`
   margin-top: 90px;
+
+  ${media.mobile} {
+    margin-top: 32px;
+  }
+
   padding: 12px 14px;
   border: 1px solid ${colors.contributionBorder};
 `;

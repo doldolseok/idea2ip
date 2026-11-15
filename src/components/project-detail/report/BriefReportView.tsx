@@ -17,7 +17,7 @@ import { Pill } from '../interview/interview.styles';
 import { EVIDENCE_KINDS } from '../../../constants/evidence';
 import { BRIEF_SECTION_META } from '../../../mocks/brief';
 import type { BriefReport, BriefSectionKey } from '../../../types/brief';
-import { colors } from '../../../styles/theme';
+import { colors, media } from '../../../styles/theme';
 
 interface Props {
   report: BriefReport;
@@ -124,6 +124,13 @@ const Banner = styled.div`
   background: ${colors.chipPositiveBg};
   border-radius: 10px;
 
+  ${media.mobile} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
   p:first-child {
     font-size: 11px;
     line-height: 16px;
@@ -132,6 +139,10 @@ const Banner = styled.div`
 
 const UpdateButton = styled(BlueButton)`
   width: 170px;
+
+  ${media.mobile} {
+    width: 100%;
+  }
 `;
 
 /* Figma: 안쪽 여백 16 18 14, 요소 사이 10px */
@@ -142,9 +153,10 @@ const Card = styled(ReportCard)`
 
 const Top = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
 `;
 
 const CardTitle = styled.h3`
@@ -165,6 +177,15 @@ const CardDesc = styled.p`
 const Actions = styled.div`
   display: flex;
   gap: 8px;
+
+  ${media.mobile} {
+    width: 100%;
+
+    & > button {
+      flex: 1;
+      width: auto;
+    }
+  }
 `;
 
 const EditButton = styled(OutlineBlueButton)`
@@ -178,6 +199,7 @@ const PdfButton = styled(BlueButton)`
 const Legend = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-height: 28px;
 `;
@@ -192,7 +214,15 @@ const LegendLabel = styled.span`
 
 const Preserve = styled.span`
   padding-left: 10px;
+  max-width: 100%;
   overflow: hidden;
+
+  ${media.mobile} {
+    flex-basis: 100%;
+    padding-left: 0;
+    white-space: normal;
+  }
+
   color: ${colors.contributionMuted};
   font-size: 10px;
   line-height: 14px;
@@ -238,7 +268,8 @@ const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   min-height: 32px;
   color: ${colors.contributionMuted};
   font-size: 9px;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { media, pagePadding } from '../styles/theme';
 import plusIcon from '../assets/Vector.svg';
 import emptyFolderIcon from '../assets/empty-folder.svg';
 import creationMaterialsIcon from '../assets/creation-materials.svg';
@@ -21,7 +22,7 @@ const library = [
 ];
 
 const Page = styled.div`
-  padding: 80px 50px 60px;
+  ${pagePadding}
   display: flex;
   flex-direction: column;
   gap: 46px;
@@ -32,6 +33,10 @@ const Header = styled.section`
   flex-direction: column;
   align-items: flex-start;
   gap: 50px;
+
+  ${media.mobile} {
+    gap: 28px;
+  }
 `;
 
 const TitleGroup = styled.div`
@@ -42,6 +47,7 @@ const TitleGroup = styled.div`
 
 const Title = styled.h1`
   margin: 0;
+  word-break: keep-all;
   color: #131c33;
   font-family: Pretendard, sans-serif;
   font-size: 28px;
@@ -89,6 +95,17 @@ const ProjectRow = styled.div`
   display: grid;
   grid-template-columns: repeat(${RECENT_PROJECT_COUNT}, minmax(0, 1fr));
   gap: 36px;
+
+  /* 태블릿: 2개씩, 모바일: 1개씩 (카드는 폭에 맞춰 늘어남) */
+  ${media.tablet} {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  ${media.mobile} {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 `;
 
 const LibraryRow = styled.div`
@@ -96,6 +113,16 @@ const LibraryRow = styled.div`
   align-items: center;
   gap: 40px;
   flex-wrap: wrap;
+
+  ${media.tablet} {
+    gap: 20px;
+  }
+
+  ${media.mobile} {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -123,6 +150,11 @@ const EmptyText = styled.p`
   font-weight: 600;
   line-height: 33.6px;
   white-space: nowrap;
+
+  ${media.mobile} {
+    font-size: 18px;
+    line-height: 1.4;
+  }
 `;
 
 export default function HomePage() {
