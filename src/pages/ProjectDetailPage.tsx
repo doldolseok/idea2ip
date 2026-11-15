@@ -14,7 +14,6 @@ import type { ProjectTabKey } from '../constants/projectTabs';
 import { useProjectStore } from '../store/projectStore';
 import { colors, media, pagePadding } from '../styles/theme';
 import { useProjectDetail } from '../hooks/useProjectDetail';
-import ProjectThumbnailUpload from '../components/ProjectThumbnailUpload';
 import StatusMessage, { StatusButton } from '../components/StatusMessage';
 
 // 프로젝트 상세 (/projects/:projectId?tab=process)
@@ -94,7 +93,6 @@ export default function ProjectDetailPage() {
             <Subtitle>등록 준비 중인 미술 창작 프로젝트를 한곳에서 확인해요</Subtitle>
             {project.description && <Subtitle>{project.description}</Subtitle>}
           </HeaderText>
-          <ProjectThumbnailUpload key={project.id} project={project} />
         </Header>
 
         <ProjectTabs

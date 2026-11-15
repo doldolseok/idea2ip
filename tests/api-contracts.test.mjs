@@ -26,6 +26,27 @@ const detail = { materialId: 10, materialType: 'AI_ASSISTED', title: 'Material',
 const project = { projectId: 1, title: 'Project', createdAt: '2026-11-07T10:00:00', updatedAt: null, artworkType: null, thumbnailUrl: '/uploads/project-thumbnails/a.png' };
 const art = { artworkId: 5, projectId: 1, title: 'Artwork', description: null, fileName: 'test.png', fileUrl: '/api/projects/1/artwork/image' };
 const credentials = { loginId: 'test', password: ' password ' };
+test('project filters classify completed reports, including updates with an existing ready version', async () => {
+  globalThis.localStorage = { getItem: () => 'jwt' };
+  const states = [
+    { reportStatus: 'NOT_STARTED', latestReadyVersionId: null },
+    { reportStatus: 'GENERATING', latestReadyVersionId: null },
+    { reportStatus: 'FAILED', latestReadyVersionId: null },
+    { reportStatus: 'READY', latestReadyVersionId: 2 },
+    { reportStatus: 'GENERATING', latestReadyVersionId: 2 },
+    { reportStatus: 'FAILED', latestReadyVersionId: 2 },
+    {},
+  ];
+  globalThis.fetch = async () => Response.json({ data: {
+    projects: states.map((state, index) => ({ ...project, projectId: index + 1, ...state })),
+  } });
+  const result = await projects.getProjects();
+  assert.deepEqual(result.map((item) => item.status), [
+    'in-progress', 'in-progress', 'in-progress', 'done', 'done', 'done', 'in-progress',
+  ]);
+  assert.equal(result.filter((item) => item.status === 'done').length, 3);
+  assert.equal(result.filter((item) => item.status === 'in-progress').length, 4);
+});
 const cases = [
   ['report readiness', () => reports.getReportReadiness('1'), 'GET', '/api/projects/1/report/readiness', 200, {
     canGenerate: true, inputRevision: 13, checks: [{ code: 'FINAL_ARTWORK_IMAGE_REQUIRED', status: 'READY', message: 'Ready' }], blockingReasons: [], warnings: [],

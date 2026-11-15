@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import penIcon from '../../assets/pen.svg';
 import type { ProcessMaterial } from '../../types/project';
 import { formatDate } from '../../utils/formatDate';
 import { colors, media } from '../../styles/theme';
@@ -8,13 +7,12 @@ import MaterialImage from './MaterialImage';
 interface Props {
   index: number;
   material: ProcessMaterial;
-  onEdit: (material: ProcessMaterial) => void;
   onView: (material: ProcessMaterial) => void;
 }
 
 // 창작 과정 타임라인 항목 (번호 뱃지 + 제작자료 카드)
 
-export default function TimelineItem({ index, material, onEdit, onView }: Props) {
+export default function TimelineItem({ index, material, onView }: Props) {
   const { title, description, createdAt, thumbnailUrl } = material;
 
   return (
@@ -41,10 +39,6 @@ export default function TimelineItem({ index, material, onEdit, onView }: Props)
         </Left>
         <Actions>
           <EditButton type="button" aria-label={`${title} 상세 보기`} onClick={() => onView(material)}>상세 보기</EditButton>
-          <EditButton type="button" aria-label={`${title} 수정`} onClick={() => onEdit(material)}>
-            <img src={penIcon} alt="" width={16} height={16} />
-            수정
-          </EditButton>
         </Actions>
       </Card>
     </Row>

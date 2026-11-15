@@ -82,14 +82,14 @@ export default function InterviewChat({
               projectId={projectId}
               refreshKey={refreshKey}
               currentQuestion={question}
-              pending={session.nextQuestionPending || answerBusy}
+              pending={starting || answerBusy || (session.nextQuestionPending && !error)}
               fill
             />
             {question ? (
               <InterviewAnswerForm key={question.messageId} projectId={projectId} questionId={question.messageId}
                 onBusyChange={onBusyChange} onAnswered={onAnswered} />
             ) : (
-              <StatusMessage message={session.nextQuestionPending ? '다음 질문 생성 대기 중입니다.' : '현재 질문이 없습니다.'} />
+              <StatusMessage message={error ? '질문 생성이 완료되지 않았습니다. 아래에서 재시도할 수 있습니다.' : session.nextQuestionPending ? '다음 질문 생성 상태를 확인하고 있습니다.' : '현재 질문이 없습니다.'} />
             )}
           </ChatBody>
         </ChatCard>

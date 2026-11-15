@@ -7,7 +7,7 @@ import { useProjectStore } from '../store/projectStore';
 import type { ProjectStatus } from '../types/project';
 import { colors, media, pagePadding } from '../styles/theme';
 
-type Filter = 'all' | ProjectStatus;
+type Filter = 'all' | Exclude<ProjectStatus, 'unknown'>;
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: '전체' },

@@ -4,6 +4,14 @@ import { isSupportedImage } from '../utils/image';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 
+// 최신 완료 버전이 있으면 후속 업데이트의 진행·실패 여부와 관계없이 완료입니다.
+function getProjectStatus(data: Record<string, unknown>): Project['status'] {
+  return data.reportStatus === 'READY' ||
+    (typeof data.latestReadyVersionId === 'number' && Number.isSafeInteger(data.latestReadyVersionId) && data.latestReadyVersionId > 0)
+    ? 'done'
+    : 'in-progress';
+}
+
 // CHARACTER_DESIGN은 제공된 명세 기준입니다. 나머지 값은 서버 Enum 확인이 필요합니다.
 const ARTWORK_TYPES: Record<WorkType, string> = {
   'digital-illustration': 'DIGITAL_ILLUSTRATION',
@@ -84,7 +92,7 @@ export async function getProject(projectId: string, signal?: AbortSignal): Promi
     createdAt: data.createdAt,
     updatedAt: data.createdAt,
     workType: (Object.keys(ARTWORK_TYPES) as WorkType[]).find((key) => ARTWORK_TYPES[key] === data.artworkType) ?? null,
-    status: 'unknown',
+    status: getProjectStatus(data),
   };
 }
 
@@ -133,7 +141,7 @@ export async function getProjects(signal?: AbortSignal): Promise<Project[]> {
       updatedAt: (item.updatedAt as string | null) ?? item.createdAt,
       workType,
       thumbnailUrl,
-      status: 'unknown', // 목록 명세에 진행 상태가 없으므로 임의로 완료 여부를 정하지 않습니다.
+      status: getProjectStatus(item),
     };
   });
   if (new Set(projects.map((project) => project.id)).size !== projects.length) throw new Error('프로젝트 ID가 중복된 응답입니다.');

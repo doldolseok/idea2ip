@@ -7,11 +7,11 @@ import { useProjectStore } from '../../store/projectStore';
 import MaterialImage from './MaterialImage';
 import styled from 'styled-components';
 import StatusMessage, { StatusButton } from '../StatusMessage';
-import { CancelButton, ModalActions } from '../modal/modalForm.styles';
+import { CancelButton, ModalActions, SubmitButton } from '../modal/modalForm.styles';
 import { colors } from '../../styles/theme';
 
-export default function MaterialDetailModal({ projectId, materialId, onClose, onDeleted }: {
-  projectId: string; materialId: string; onClose: () => void; onDeleted: () => void;
+export default function MaterialDetailModal({ projectId, materialId, onClose, onDeleted, onEdit }: {
+  projectId: string; materialId: string; onClose: () => void; onDeleted: () => void; onEdit: () => void;
 }) {
   const [attempt, setAttempt] = useState(0);
   const [deleting, setDeleting] = useState(false);
@@ -84,6 +84,7 @@ export default function MaterialDetailModal({ projectId, materialId, onClose, on
           <DeleteButton type="button" disabled={deleting} onClick={handleDelete}>
             {deleting ? '삭제 중…' : '창작 자료 삭제'}
           </DeleteButton>
+          <SubmitButton type="button" disabled={deleting} onClick={() => { if (!deleteLock.current) onEdit(); }}>수정하기</SubmitButton>
         </ModalActions>
         </>
       )}

@@ -94,14 +94,18 @@ export default function ProcessTab({ projectId }: { projectId: string }) {
               key={material.id}
               index={index}
               material={material}
-              onEdit={openEditModal}
               onView={(item) => setDetailId(item.id)}
             />
           ))}
         </Timeline>
       )}
 
-      {detailId && <MaterialDetailModal key={detailId} projectId={projectId} materialId={detailId} onClose={() => setDetailId(null)} onDeleted={() => {
+      {detailId && <MaterialDetailModal key={detailId} projectId={projectId} materialId={detailId} onClose={() => setDetailId(null)} onEdit={() => {
+        const material = useProjectStore.getState().materialsByProjectId[projectId]?.find((item) => item.id === detailId);
+        if (!material) return;
+        setDetailId(null);
+        openEditModal(material);
+      }} onDeleted={() => {
         setDetailId(null);
         setAttempt((value) => value + 1);
       }} />}

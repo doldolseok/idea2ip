@@ -26,7 +26,7 @@ export function useNewProjectModal() {
       id: String(created.projectId),
       title: created.title,
       workType,
-      status: 'unknown',
+      status: 'in-progress',
       updatedAt: new Date().toISOString(),
     });
     }
