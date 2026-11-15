@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link, Outlet, useMatch } from 'react-router-dom';
+import { Navigate, Outlet, useMatch } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import { media, pagePadding } from '../styles/theme';
@@ -31,7 +31,7 @@ export default function DashboardLayout() {
   const [result, setResult] = useState<{ attempt: number; error?: string; unauthorized?: boolean }>();
 
   useEffect(() => {
-    if (isDetailPage) return;
+    if (isDetailPage || !localStorage.getItem('accessToken')?.replace(/^Bearer\s+/i, '').trim()) return;
     const controller = new AbortController();
     const token = localStorage.getItem('accessToken');
     const isStale = () => {
@@ -61,6 +61,9 @@ export default function DashboardLayout() {
   }, [attempt, isDetailPage]);
 
   const current = result?.attempt === attempt ? result : undefined;
+  if (!localStorage.getItem('accessToken')?.replace(/^Bearer\s+/i, '').trim() || current?.unauthorized) {
+    return <Navigate to="/login" replace />;
+  }
   return (
     <Wrapper>
       <Sidebar />
@@ -72,7 +75,7 @@ export default function DashboardLayout() {
             <StatusMessage
               role="alert"
               message={current.error}
-              action={current.unauthorized ? <StatusButton as={Link} to="/login">로그인하기</StatusButton> : (
+              action={(
                 <StatusButton type="button" onClick={() => setAttempt((value) => value + 1)}>다시 시도</StatusButton>
               )}
             />

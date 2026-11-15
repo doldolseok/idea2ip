@@ -1,4 +1,4 @@
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import StatusBadge from '../components/StatusBadge';
 import ProjectTabs from '../components/project-detail/ProjectTabs';
@@ -65,6 +65,7 @@ export default function ProjectDetailPage() {
 
   const changeTab = (tab: ProjectTabKey) => setSearchParams({ tab }, { replace: true });
 
+  if (detail.status === 401) return <Navigate to="/login" replace />;
   if (detail.loading) return <Page><StatusMessage message="프로젝트 정보를 불러오는 중입니다." /></Page>;
   if (!project) return (
     <Page>

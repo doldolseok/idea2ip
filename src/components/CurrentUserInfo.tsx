@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { CurrentUserError, getCurrentUser } from '../api/users';
 import type { CurrentUser } from '../api/users';
@@ -37,6 +37,7 @@ export default function CurrentUserInfo() {
   }, [token, attempt]);
 
   const current = result?.attempt === attempt ? result : undefined;
+  if (current?.unauthorized) return <Navigate to="/login" replace />;
   return (
     <Profile aria-label="내 정보">
       {current?.unauthorized ? (
